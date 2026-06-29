@@ -107,7 +107,6 @@ if ws_module_enabled "ides"; then
     check_binary "VSCode" "code"
     check_version "VSCode" "code --version"
     check_binary "Cursor" "cursor"
-    check_binary "Windsurf" "windsurf"
     check_binary "Zed" "zeditor"
     check_binary "IntelliJ IDEA" "idea-oss"
 else

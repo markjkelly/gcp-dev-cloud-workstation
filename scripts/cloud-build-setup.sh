@@ -517,7 +517,7 @@ BASE_PKGS="neovim tmux tree ffmpeg git gh curl wget htop ripgrep fd jq unzip chr
 # IDE packages (ides module — ai + full profiles)
 IDE_PKGS=""
 if profile_has_module "ides"; then
-    IDE_PKGS="vscode jetbrains.idea-oss code-cursor windsurf zed-editor"
+    IDE_PKGS="vscode jetbrains.idea-oss code-cursor zed-editor"
     log "    + IDEs: $IDE_PKGS"
 fi
 

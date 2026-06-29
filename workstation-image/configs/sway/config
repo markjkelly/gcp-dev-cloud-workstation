@@ -136,10 +136,6 @@ bindsym $super+m exec env DISPLAY=:0 $nix/idea-oss
 bindsym $mod+y exec env -u LD_LIBRARY_PATH $nix/code --no-sandbox --ozone-platform=wayland --disable-gpu --disable-dev-shm-usage
 bindsym $super+y exec env -u LD_LIBRARY_PATH $nix/code --no-sandbox --ozone-platform=wayland --disable-gpu --disable-dev-shm-usage
 
-# Windsurf (Electron app — same flags as VSCode)
-bindsym $mod+w exec env -u LD_LIBRARY_PATH $nix/windsurf --no-sandbox --ozone-platform=wayland --disable-gpu --disable-dev-shm-usage
-bindsym $super+w exec env -u LD_LIBRARY_PATH $nix/windsurf --no-sandbox --ozone-platform=wayland --disable-gpu --disable-dev-shm-usage
-
 # Clipboard history picker (clipman — needs wofi in PATH and clear LD_LIBRARY_PATH)
 bindsym $mod+a exec env -u LD_LIBRARY_PATH GDK_BACKEND=wayland PATH=/home/user/.nix-profile/bin:$PATH $nix/clipman pick --tool wofi
 bindsym $super+a exec env -u LD_LIBRARY_PATH GDK_BACKEND=wayland PATH=/home/user/.nix-profile/bin:$PATH $nix/clipman pick --tool wofi

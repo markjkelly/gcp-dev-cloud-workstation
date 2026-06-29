@@ -172,7 +172,7 @@ A Cloud Scheduler job stops the workstation daily at **8:00 PM Central** to save
 | **Terminal** | foot terminal, ZSH + Starship prompt, DejaVu Sans Mono font (size 14), tmux with Tokyo Night theme |
 | **Fonts** | DejaVu Sans Mono (system), Operator Mono (proprietary OTF), Cascadia Code, Fira Code, JetBrains Mono (via Nix) |
 | **Browsers** | Google Chrome, Chromium |
-| **IDEs** | Antigravity IDE, VS Code, Cursor, Windsurf, Zed, IntelliJ IDEA, Neovim (custom config) |
+| **IDEs** | Antigravity IDE, VS Code, Cursor, Zed, IntelliJ IDEA, Neovim (custom config) |
 | **AI Tools** | Antigravity CLI, Claude Code, Gemini CLI, Codex CLI, OpenCode, Aider, Cody CLI, pi-coding-agent |
 | **Languages** | Go (latest), Rust (via rustup), Python 3.12 (via pyenv), Ruby 3.3 (via rbenv), Node.js 22 (via Nix) |
 | **Apps** | Antigravity Hub, tmux, ripgrep, fd, jq, ffmpeg, wofi, thunar, clipman |
@@ -193,7 +193,6 @@ All shortcuts use `CTRL+SHIFT` as the modifier (works through Chrome Remote Desk
 | `CTRL+SHIFT+T` | New terminal (foot) |
 | `CTRL+SHIFT+B` | Chrome browser |
 | `CTRL+SHIFT+Y` | VS Code |
-| `CTRL+SHIFT+W` | Windsurf |
 | `CTRL+SHIFT+M` | IntelliJ IDEA |
 | `CTRL+SHIFT+R` | App launcher (wofi) |
 | `CTRL+SHIFT+A` | Clipboard history (clipman) |

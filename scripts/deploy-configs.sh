@@ -158,7 +158,7 @@ MODEOF"
   BASE_PKGS="neovim tmux tree ffmpeg git gh curl wget htop ripgrep fd jq unzip chromium google-chrome sway waybar foot wofi thunar grim slurp wl-clipboard clipman mako swaylock swayidle wayvnc nodejs_22 xdg-desktop-portal-wlr"
   IDE_PKGS=""
   if profile_has_module "ides"; then
-    IDE_PKGS="vscode jetbrains.idea-oss code-cursor windsurf zed-editor"
+    IDE_PKGS="vscode jetbrains.idea-oss code-cursor zed-editor"
   fi
   ALL_PKGS="$BASE_PKGS $IDE_PKGS"
 

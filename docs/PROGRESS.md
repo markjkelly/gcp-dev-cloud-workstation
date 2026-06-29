@@ -124,3 +124,4 @@ Milestone 1: Initial Setup
 
 ### Next Steps
 - Verify the completed workstation cluster is functional.
+  - *Note*: The build passed Step 8 (IAM bindings) successfully, but later failed at Step 11 (Persist Nix store) due to an SSH timeout during the `/nix` directory copy. This is a separate issue to be investigated later.

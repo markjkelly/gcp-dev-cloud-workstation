@@ -1,5 +1,13 @@
 # Release Notes — Cloud Workstation
 
+## v1.1.1 — E2E Test & Setup Script Fixes (2026-06-29)
+
+### Added
+- **HTTPS Git Clone Fallback** — Added logic in `scripts/ws.sh` to dynamically convert `git@github.com:` SSH clone URLs to `https://github.com/` format to allow Cloud Build to clone the repository natively without requiring SSH keys.
+
+### Changed
+- **Default Region** — Updated default region and `_REGION` fallback in `scripts/ws.sh` to `us-central1`.
+
 ## v1.1.0 — Tooling Cleanups & Deployment Simplification (2026-06-29)
 
 ### Added

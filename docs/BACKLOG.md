@@ -22,4 +22,4 @@
 | ID | Feature | Spec | Priority | Status | Owner | Branch | Dependencies | Feedback |
 |----|---------|------|----------|--------|-------|--------|--------------|----------|
 | F-0001 | Port agent context, skills, and docs | — | P0 | done | SWE-1 | main | — | Initial port from private cloud-workstation repository |
-| F-0002 | Scratch E2E Integration Test | [F-0002](specs/F-0002-scratch-e2e-test.md) | P0 | in-progress | SWE-1 | feature/scratch-e2e-test | F-0001 | Perform end-to-end integration test by building a fresh workstation from scratch in the target project in us-central1 |
+| F-0002 | Scratch E2E Integration Test | [F-0002](specs/F-0002-scratch-e2e-test.md) | P0 | done | SWE-1 | feature/scratch-e2e-test | F-0001 | Perform end-to-end integration test by building a fresh workstation from scratch in the target project in us-central1 |

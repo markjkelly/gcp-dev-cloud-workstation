@@ -30,7 +30,7 @@ variable "workstation_id" {
 variable "machine_type" {
   description = "The GCE machine type for the workstation VM."
   type        = string
-  default     = "e2-standard-8"
+  default     = "n2-standard-8"
 }
 
 variable "disk_size_gb" {

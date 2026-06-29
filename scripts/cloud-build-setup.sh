@@ -38,9 +38,9 @@ profile_has_module() {
     echo ",$MODULES," | grep -q ",$1,"
 }
 
-CLUSTER="main-cluster"
-CONFIG="sway-config"
-WORKSTATION="sway-workstation"
+CLUSTER="workstation-cluster"
+CONFIG="ws-config"
+WORKSTATION="dev-workstation"
 AR_REPO="workstation-images"
 IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/${AR_REPO}/dev-workstation:latest"
 SWAY_SA="sway-workstation-sa@${PROJECT_ID}.iam.gserviceaccount.com"
@@ -381,10 +381,7 @@ for SA in "$SWAY_SA" "$COMPUTE_SA" "$WS_SA"; do
         --role="roles/artifactregistry.reader" \
         --project="$PROJECT_ID" --quiet --format=none 2>&1 || true
 done
-# Cloud Build SA needs workstations.user to SSH into the workstation
-gcloud projects add-iam-policy-binding "$PROJECT_ID" \
-    --member="serviceAccount:$COMPUTE_SA" \
-    --role="roles/workstations.user" --quiet --format=none 2>&1 || true
+
 test_pass "Service account created, AR reader granted"
 
 # =========================================================================
@@ -716,7 +713,9 @@ step "Step 11/19: Persist Nix store for restarts"
 # bind-mount it back to /nix on each boot.
 log "Copying /nix to /home/user/nix for restart persistence..."
 ws_ssh_long '
-if [ -d /nix/store ] && [ "$(ls /nix/store/ 2>/dev/null | wc -l)" -gt 0 ]; then
+if mountpoint -q /nix; then
+    echo "COPY_SKIP: /nix is already a mountpoint"
+elif [ -d /nix/store ] && [ "$(ls /nix/store/ 2>/dev/null | wc -l)" -gt 0 ]; then
     rm -rf /home/user/nix 2>/dev/null
     cp -a /nix /home/user/nix
     echo "COPY_DONE: $(du -sh /home/user/nix 2>/dev/null | cut -f1)"

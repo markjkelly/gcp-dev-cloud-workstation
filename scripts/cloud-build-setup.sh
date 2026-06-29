@@ -442,11 +442,11 @@ if [ "$WS_STATE" != "STATE_RUNNING" ]; then
 fi
 
 # Grant SSH access before attempting SSH — compute SA (Cloud Build) and user both need
-# workstations.user on the config, otherwise the SSH loop below will fail for 10 minutes.
-log "Granting workstations.user to compute SA and user on config..."
-add_ws_iam_binding "config" "$CONFIG" "serviceAccount:$COMPUTE_SA" "roles/workstations.user" || true
+# workstations.user on the workstation, otherwise the SSH loop below will fail for 10 minutes.
+log "Granting workstations.user to compute SA and user on workstation..."
+add_ws_iam_binding "workstation" "$WORKSTATION" "serviceAccount:$COMPUTE_SA" "roles/workstations.user" || true
 if [ -n "$USER_ACCOUNT" ]; then
-    add_ws_iam_binding "config" "$CONFIG" "user:$USER_ACCOUNT" "roles/workstations.user" || true
+    add_ws_iam_binding "workstation" "$WORKSTATION" "user:$USER_ACCOUNT" "roles/workstations.user" || true
 fi
 sleep 10  # IAM propagation
 

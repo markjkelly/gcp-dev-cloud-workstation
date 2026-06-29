@@ -178,7 +178,7 @@ if [ "$COMMAND" = "setup" ]; then
     else
         log "  Creating default network..."
         gcloud compute networks create default \
-            --subnet-mode=auto --project="$PROJECT_ID" --quiet 2>&1 | head -3
+            --subnet-mode=auto --project="$PROJECT_ID" --quiet >/dev/null 2>&1
         log "  Default network created"
     fi
 

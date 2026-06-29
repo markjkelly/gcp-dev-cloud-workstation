@@ -9,7 +9,7 @@
 # Run this script after your workstation is started for the first time.
 #
 # Usage:
-#   bash scripts/deploy-configs.sh -p PROJECT_ID [-r REGION] [-c CLUSTER] [-w WORKSTATION] [--profile PROFILE]
+#   bash scripts/deploy-configs.sh -p PROJECT_ID [-r REGION] [-c CLUSTER] [-w WORKSTATION]
 # =============================================================================
 
 set -euo pipefail
@@ -18,19 +18,17 @@ REGION="us-central1"
 CLUSTER="main-cluster"
 WORKSTATION="sway-workstation"
 CONFIG="sway-config"
-PROFILE="full"
 PROJECT_ID=""
 
 usage() {
   echo "Usage:"
-  echo "  bash scripts/deploy-configs.sh -p PROJECT_ID [-r REGION] [-c CLUSTER] [-w WORKSTATION] [--profile PROFILE]"
+  echo "  bash scripts/deploy-configs.sh -p PROJECT_ID [-r REGION] [-c CLUSTER] [-w WORKSTATION]"
   echo ""
   echo "Options:"
   echo "  -p, --project PROJECT_ID     GCP project ID (required)"
   echo "  -r, --region REGION          GCP region (default: us-central1)"
   echo "  -c, --cluster CLUSTER        Workstation cluster name (default: main-cluster)"
   echo "  -w, --workstation NAME       Workstation name (default: sway-workstation)"
-  echo "  --profile PROFILE            Nix install profile: minimal, dev, ai, full (default: full)"
   exit 1
 }
 
@@ -41,7 +39,6 @@ while [[ $# -gt 0 ]]; do
     -r|--region)      REGION="$2"; shift 2 ;;
     -c|--cluster)     CLUSTER="$2"; shift 2 ;;
     -w|--workstation) WORKSTATION="$2"; shift 2 ;;
-    --profile)        PROFILE="$2"; shift 2 ;;
     -h|--help)        usage ;;
     *) echo "Unknown option: $1"; usage ;;
   esac
@@ -122,8 +119,6 @@ cat workstation-image/scripts/ws-modules.sh | ws_pipe "cat > ~/.local/bin/ws-mod
 cat workstation-image/scripts/hub-restart | ws_pipe "cat > ~/.local/bin/hub-restart && chmod +x ~/.local/bin/hub-restart"
 cat workstation-image/scripts/hub-start | ws_pipe "cat > ~/.local/bin/hub-start && chmod +x ~/.local/bin/hub-start"
 cat workstation-image/scripts/snippet-picker | ws_pipe "cat > ~/.local/bin/snippet-picker && chmod +x ~/.local/bin/snippet-picker"
-cat workstation-image/scripts/claude-tmux | ws_pipe "cat > ~/.local/bin/claude-tmux && chmod +x ~/.local/bin/claude-tmux"
-cat workstation-image/scripts/tmux-debug | ws_pipe "cat > ~/.local/bin/tmux-debug && chmod +x ~/.local/bin/tmux-debug"
 
 # 3. Check if Nix is installed
 log "Checking Nix installation status..."
@@ -135,32 +130,16 @@ else
   log "Nix not found. Initializing persistent Nix installation..."
 
   # Build module config
-  log "Setting up module configuration (profile=$PROFILE)..."
-  # Define module lists per profile
-  declare -A PROFILE_MODULES
-  PROFILE_MODULES[minimal]="core,desktop"
-  PROFILE_MODULES[dev]="core,desktop,tmux,ai-tools-minimal"
-  PROFILE_MODULES[ai]="core,desktop,tmux,ides,ai-tools"
-  PROFILE_MODULES[full]="core,desktop,tmux,ides,ai-tools,languages,tailscale"
-
-  MODULES="${PROFILE_MODULES[$PROFILE]:-${PROFILE_MODULES[full]}}"
+  log "Setting up module configuration..."
+  MODULES="core,desktop,tmux,ides,ai-tools,languages,tailscale"
   ws_ssh "cat > ~/.ws-modules << 'MODEOF'
-profile=$PROFILE
+profile=full
 modules=$MODULES
 MODEOF"
 
-  # Helper function to check modules
-  profile_has_module() {
-    echo ",$MODULES," | grep -q ",$1,"
-  }
-
-  # Build package list dynamically
+  # Build package list
   BASE_PKGS="neovim tmux tree ffmpeg git gh curl wget htop ripgrep fd jq unzip chromium google-chrome sway waybar foot wofi thunar grim slurp wl-clipboard clipman mako swaylock swayidle wayvnc nodejs_22 xdg-desktop-portal-wlr"
-  IDE_PKGS=""
-  if profile_has_module "ides"; then
-    IDE_PKGS="vscode jetbrains.idea-oss code-cursor windsurf zed-editor"
-  fi
-  ALL_PKGS="$BASE_PKGS $IDE_PKGS"
+  ALL_PKGS="$BASE_PKGS vscode"
 
   # Format package list for Nix
   NIX_PKG_LIST=""
@@ -199,18 +178,6 @@ MODEOF"
       ll = "ls -la";
       vim = "nvim";
       vi = "nvim";
-      t1 = "claude-tmux 1";
-      t2 = "claude-tmux 2";
-      t3 = "claude-tmux 3";
-      t4 = "claude-tmux 4";
-      t5 = "claude-tmux 5";
-      t6 = "claude-tmux 6";
-      t7 = "claude-tmux 7";
-      t8 = "claude-tmux 8";
-      t9 = "claude-tmux 9";
-      t10 = "claude-tmux 10";
-      cc = "claude-tmux";
-      tdbg = "tmux-debug 1";
       ta = "tmux attach";
       tl = "tmux list-sessions";
       tk = "tmux kill-session -t";

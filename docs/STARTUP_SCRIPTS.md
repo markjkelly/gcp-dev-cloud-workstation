@@ -14,13 +14,13 @@ Summary of all boot scripts that run on every workstation start. Scripts execute
 | 6 | `09-sync.sh` | **Sync boot scripts + sway config from git repo** (F-0108). Runs `git pull --ff-only` in repo, copies `workstation-image/boot/*.sh` to `~/boot/`, copies `workstation-image/configs/sway/config` to `~/.config/home-manager/sway-config`. Logs to `~/logs/sync.log`. Graceful failure if repo missing or pull fails (boot continues). | Yes — idempotent copies | ~2s (pull + copies) |
 | 6 | `06-prompt.sh` | Install Starship prompt; deploy foot terminal config by copying `~/boot/foot.ini` (source of truth: `workstation-image/configs/foot/foot.ini`, deployed by `cloud-build-setup.sh` step 13) into `~/.config/foot/foot.ini`, with an embedded heredoc fallback if `~/boot/foot.ini` is missing (F-0094) | Yes — overwrites configs | ~5s |
 | 6a | `06a-tailscale.sh` | Tailscale VPN (opt-in via `TAILSCALE_AUTHKEY` in `~/.env`). Starts tailscaled, authenticates, enables SSH, configures SSH password auth, adds iptables rule for SSH on tailscale0 | Yes — checks running/connected | ~5s |
-| 6b | `06b-tmux.sh` | Deploy `tmux.conf` (Tokyo Night theme), `claude-tmux`, and `tmux-debug` scripts | Yes — copy overwrite | ~1s |
-| 7 | `07-apps.sh` | **F-0123:** Now runs via `ws-app-updates.service` (After=user@1000.service), NOT via setup.sh. Upgrade AI tools (npm: Claude Code, Codex, Cody, Pi; go: OpenCode; pip: Aider; gh: Copilot), run `home-manager switch`; install/update Antigravity Hub and CLI; **F-0125**: remove orphaned IDE dirs (`~/.config/Antigravity`, `~/.config/Antigravity.bak.*`, `~/.antigravity`, `~/.cache/antigravity`). Logs to `~/logs/app-update.log`. | Yes — update/switch idempotent; dir removal is rm -rf (idempotent) | ~60s |
+| 6b | `06b-tmux.sh` | Deploy `tmux.conf` (Tokyo Night theme) | Yes — copy overwrite | ~1s |
+| 7 | `07-apps.sh` | **F-0123:** Now runs via `ws-app-updates.service` (After=user@1000.service), NOT via setup.sh. Run `home-manager switch`; install/update Antigravity Hub and CLI; **F-0125**: remove orphaned IDE dirs (`~/.config/Antigravity`, `~/.config/Antigravity.bak.*`, `~/.antigravity`, `~/.cache/antigravity`). Logs to `~/logs/app-update.log`. | Yes — update/switch idempotent; dir removal is rm -rf (idempotent) | ~60s |
 | 8 | `07a-lang-deps.sh` | Install apt build dependencies for language compilers (build-essential, libssl-dev, etc.) | Yes — dpkg -s check | ~10s |
 | 9 | `07b-languages.sh` | Install/update Go (tarball), Rust (rustup), Python (pyenv), Ruby (rbenv) | Yes — existence checks | First: ~15min, subsequent: ~30s |
 | 10 | `09-wofi.sh` | Deploy wofi config + Tokyo Night style.css to `~/.config/wofi/` | Yes — copy overwrite | ~1s |
 | 11 | `09-snippets.sh` | Deploy snippet-picker script + default snippets.conf (no-clobber) | Yes — cp -n for user config | ~1s |
-| 12 | `11-custom-tools.sh` | Fork-only (F-0089): installs Terraform + gh CLI to `~/.local/bin` (pinned), Java LTS via SDKMAN, Eclipse, Claude Code to `~/.npm-global` (with `~/.npmrc` pinning `prefix` so auto-update doesn't EACCES on `/usr`), JetBrains Mono font. Also patches noVNC `rfb.js` (QEMU key events) and masks `ws-autolaunch.service` | Yes — version/existence guarded | First: ~5min, subsequent: ~10s |
+| 12 | `11-custom-tools.sh` | Fork-only (F-0089): installs Terraform + gh CLI to `~/.local/bin` (pinned), Java LTS via SDKMAN, Eclipse, JetBrains Mono font, and configures npm global prefix (with `~/.npmrc` pinning `prefix` so global npm packages don't EACCES). Also patches noVNC `rfb.js` (QEMU key events) and masks `ws-autolaunch.service` | Yes — version/existence guarded | First: ~5min, subsequent: ~10s |
 
 **Note:** `07-apps.sh`, `08-workspaces.sh`, and `10-tests.sh` are NOT run by setup.sh — they run via systemd services. `07-apps.sh` runs via `ws-app-updates.service` (After=user@1000.service) so the user session is guaranteed ready. `08-workspaces.sh` and `10-tests.sh` run after Sway starts. See below.
 
@@ -129,8 +129,6 @@ Scripts deployed to `~/.local/bin/` by `cloud-build-setup.sh` (persisted to the 
 | `antigravity-hub` | installed by `07-apps.sh` (tarball) | Symlink to the Antigravity Hub Electron binary |
 | `sway-status` | `workstation-image/configs/swaybar/sway-status` | swaybar status line (clock, battery, etc.) |
 | `snippet-picker` | `workstation-image/scripts/snippet-picker` | Wofi-based snippet launcher (desktop module) |
-| `claude-tmux` | `workstation-image/scripts/claude-tmux` | Open a named tmux window with Claude Code (tmux module) |
-| `tmux-debug` | `workstation-image/scripts/tmux-debug` | tmux session diagnostics (tmux module) |
 | `hub-restart` | `workstation-image/scripts/hub-restart` | (F-0122) Manually (re)launch the Antigravity Hub onto ws1 — kills any stuck Hub, clears Singleton lock, relaunches from user session, polls for language_server readiness. Workaround for the cold-boot blank-ws1 failure. |
 
 ## Key Design Decisions
@@ -138,7 +136,7 @@ Scripts deployed to `~/.local/bin/` by `cloud-build-setup.sh` (persisted to the 
 1. **All scripts are idempotent** — safe to run multiple times. No duplicate entries, no state corruption.
 2. **Persistent disk** — all installs go to `$HOME` on the persistent disk. The Docker image is ephemeral; only `~/boot/` scripts and configs persist.
 3. **Home Manager manages Nix apps** — `07-apps.sh` runs `nix-channel --update && home-manager switch` to upgrade all Nix-managed tools (IDEs, dev tools, Sway ecosystem).
-4. **npm manages AI CLI tools** — Claude Code, Codex, Cody, Pi installed globally to `~/.npm-global/`.
+4. **npm prefix configured** — for global packages to write to persistent `~/.npm-global/`.
 5. **Native version managers for languages** — Go (tarball), Rust (rustup), Python (pyenv), Ruby (rbenv) for multi-version support.
 6. **No-clobber for user configs** — `snippets.conf` and `.zshrc.local` are never overwritten, preserving user customizations.
 7. **Test on every boot** — `10-tests.sh` runs ~190 checks and saves results for the PO to review.

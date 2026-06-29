@@ -46,7 +46,7 @@ When the workstation container starts, it executes `/google/scripts/entrypoint.s
 13. **Snippet Picker (`09-snippets.sh`):** Configures the lightweight snippet picker utility and custom configuration.
 14. **Sway Sync (`09-sync.sh`):** Synchronizes boot scripts and Sway config from the git repo on every boot to apply changes.
 15. **Application Launcher (`09-wofi.sh`):** Deploys wofi menu with Tokyo Night colors.
-16. **Environment Verification (`10-tests.sh`):** Runs 160+ automated integration tests to ensure workspace health (results at `~/logs/boot-test-results.txt`).
+16. **Environment Verification (`10-tests.sh`):** Runs 190+ automated integration tests to ensure workspace health (results at `~/logs/boot-test-results.txt`).
 17. **Custom Tools (`11-custom-tools.sh`):** Deploys custom CLI binaries (Terraform, gh, etc.) and sets up the `gh` wrapper to prevent dummy GITHUB_TOKEN overrides.
 18. **Chrome Remote Desktop (`12-crd.sh`):** Provisions Chrome Remote Desktop, configures a nested Sway display session on `:20`, and deploys the `crd-resize` utility.
 

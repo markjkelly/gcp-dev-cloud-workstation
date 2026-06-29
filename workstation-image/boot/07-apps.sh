@@ -2,7 +2,7 @@
 # =============================================================================
 # 07-apps.sh — Update apps to latest versions on boot
 # =============================================================================
-# Updates Claude Code, Gemini CLI (npm), Nix apps (home-manager),
+# Updates Nix apps (home-manager),
 # Antigravity Hub, and Antigravity CLI.
 # Logs to ~/logs/app-update.log.
 # =============================================================================
@@ -293,15 +293,6 @@ Terminal=false
 StartupWMClass=antigravity
 DESKTOP_EOF
 
-# --- Update npm global packages (Claude Code, Gemini CLI) ---
-# F-0121: check exit status; log real success or failure (no unconditional "complete").
-log "Updating npm global packages..."
-if runuser -u $USER -- bash -c ". $NIX_SH && export NPM_CONFIG_PREFIX=$HOME_DIR/.npm-global && npm update -g @anthropic-ai/claude-code @google/gemini-cli @openai/codex @sourcegraph/cody @mariozechner/pi-coding-agent" >> "$LOG_FILE" 2>&1; then
-    log "npm global packages: update OK"
-else
-    log "npm global packages: update FAILED (rc=$?) — check $LOG_FILE for details"
-fi
-
 # --- Install/update Antigravity CLI ---
 # F-0121: check exit status; log real success or failure.
 log "Installing/updating Antigravity CLI..."
@@ -319,15 +310,6 @@ else
     else
         log "Antigravity CLI: update FAILED (rc=$?) — check $LOG_FILE for details"
     fi
-fi
-
-# --- Update OpenCode (Go binary) ---
-# F-0121: check exit status; log real success or failure.
-log "Updating OpenCode..."
-if runuser -u $USER -- bash -c "export GOROOT=$HOME_DIR/go && export GOPATH=$HOME_DIR/gopath && export PATH=\$GOROOT/bin:\$GOPATH/bin:\$PATH && go install github.com/opencode-ai/opencode@latest" >> "$LOG_FILE" 2>&1; then
-    log "OpenCode: update OK"
-else
-    log "OpenCode: update FAILED (rc=$?) — check $LOG_FILE for details"
 fi
 
 # --- Update Nix channel + Home Manager (VSCode, IntelliJ, etc.) ---

@@ -508,21 +508,11 @@ else
     notify_and_fail "Home Manager verification"
 fi
 
-# Build Nix package list dynamically based on profile
-log "  Building package list for profile '$PROFILE'..."
+# Build Nix package list dynamically
+log "  Building package list..."
 
-# Base packages (all profiles)
-BASE_PKGS="neovim tmux tree ffmpeg git gh curl wget htop ripgrep fd jq unzip chromium google-chrome sway waybar foot wofi thunar grim slurp wl-clipboard clipman mako swaylock swayidle wayvnc nodejs_22 xdg-desktop-portal-wlr"
-
-# IDE packages (ides module — ai + full profiles)
-IDE_PKGS=""
-if profile_has_module "ides"; then
-    IDE_PKGS="vscode jetbrains.idea-oss code-cursor windsurf zed-editor"
-    log "    + IDEs: $IDE_PKGS"
-fi
-
-ALL_PKGS="$BASE_PKGS $IDE_PKGS"
-log "    Total packages: $(echo $ALL_PKGS | wc -w)"
+ALL_PKGS="neovim tmux tree ffmpeg git gh curl wget htop ripgrep fd jq unzip chromium google-chrome sway waybar foot wofi thunar grim slurp wl-clipboard clipman mako swaylock swayidle wayvnc nodejs_22 xdg-desktop-portal-wlr vscode"
+log "    Packages: $ALL_PKGS"
 
 # Format packages as Nix list (4 per line for readability)
 NIX_PKG_LIST=""
@@ -562,18 +552,6 @@ cat << NIXEOF | ws_pipe "mkdir -p ~/.config/home-manager && cat > ~/.config/home
       ll = "ls -la";
       vim = "nvim";
       vi = "nvim";
-      t1 = "claude-tmux 1";
-      t2 = "claude-tmux 2";
-      t3 = "claude-tmux 3";
-      t4 = "claude-tmux 4";
-      t5 = "claude-tmux 5";
-      t6 = "claude-tmux 6";
-      t7 = "claude-tmux 7";
-      t8 = "claude-tmux 8";
-      t9 = "claude-tmux 9";
-      t10 = "claude-tmux 10";
-      cc = "claude-tmux";
-      tdbg = "tmux-debug 1";
       ta = "tmux attach";
       tl = "tmux list-sessions";
       tk = "tmux kill-session -t";
@@ -789,12 +767,7 @@ if ws_ssh '. ~/.local/bin/ws-modules.sh 2>/dev/null && ws_module_enabled tmux &&
         ws_pipe "cat > ~/.tmux.conf"
     test_pass "tmux.conf deployed"
 
-    # Deploy claude-tmux and tmux-debug scripts
-    cat "${REPO_DIR}/workstation-image/scripts/claude-tmux" | \
-        ws_pipe "mkdir -p ~/.local/bin && cat > ~/.local/bin/claude-tmux && chmod +x ~/.local/bin/claude-tmux"
-    cat "${REPO_DIR}/workstation-image/scripts/tmux-debug" | \
-        ws_pipe "cat > ~/.local/bin/tmux-debug && chmod +x ~/.local/bin/tmux-debug"
-    test_pass "claude-tmux and tmux-debug deployed"
+    test_pass "tmux configuration deployed"
 else
     log "Skipping tmux configs (module 'tmux' not enabled)"
 fi
@@ -877,20 +850,11 @@ fi
 step "Step 17/19: Install AI tools and Antigravity"
 # =========================================================================
 # Check for ai-tools or ai-tools-minimal (dev profile gets Claude Code only)
-AI_MODULE_CHECK=$(ws_ssh '. ~/.local/bin/ws-modules.sh 2>/dev/null && if ws_module_enabled ai-tools; then echo full; elif ws_module_enabled ai-tools-minimal; then echo minimal; else echo disabled; fi' 2>/dev/null || echo "full")
-
-if echo "$AI_MODULE_CHECK" | grep -q "full"; then
-    # Full AI tools: all NPM tools + OpenCode + Aider
-    if ws_ssh_long '
-    '"${NIX_SOURCE}"'
-    export NPM_CONFIG_PREFIX=$HOME/.npm-global
-    mkdir -p $HOME/.npm-global/bin
-
-    npm install -g @anthropic-ai/claude-code @google/gemini-cli @openai/codex @sourcegraph/cody @mariozechner/pi-coding-agent
-    '; then
-        test_pass "NPM AI tools installed"
+    # Ensure npm global directory is initialized
+    if ws_ssh 'mkdir -p $HOME/.npm-global/bin'; then
+        test_pass "NPM global directory initialized"
     else
-        test_warn "NPM AI tools install had errors (some tools may be missing)"
+        test_warn "NPM global directory initialization failed"
     fi
 
     # Install Antigravity CLI via curl (persists to ~/.gemini/antigravity-cli on persistent disk)
@@ -898,25 +862,7 @@ if echo "$AI_MODULE_CHECK" | grep -q "full"; then
        ws_ssh 'test -d $HOME/.gemini/antigravity-cli'; then
         test_pass "Antigravity CLI installed"
     else
-        test_warn "Antigravity CLI install had errors (curl script may have failed)"
-    fi
-
-    # F-0116: Antigravity IDE (apt package "antigravity") has been removed.
-    # The IDE is no longer installed via Docker image or boot script.
-    # The Hub (antigravity-hub tarball) continues to be installed by 07-apps.sh.
-
-    # Install OpenCode via go install
-    if ws_ssh "${NIX_SOURCE}"' && export GOROOT=$HOME/go GOPATH=$HOME/gopath && export PATH=$GOROOT/bin:$GOPATH/bin:$PATH && go install github.com/opencode-ai/opencode@latest'; then
-        test_pass "OpenCode installed"
-    else
-        test_warn "OpenCode install failed (may work on next boot via 07-apps.sh)"
-    fi
-
-    # Install aider via pip
-    if ws_ssh 'export PYENV_ROOT=$HOME/.pyenv && export PATH=$PYENV_ROOT/bin:$PATH && eval "$(pyenv init -)" && pip install --user aider-chat'; then
-        test_pass "Aider installed"
-    else
-        test_warn "Aider install failed (may work on next boot via 07-apps.sh)"
+        test_warn "Antigravity CLI install had errors"
     fi
 
     # Create default .env if it doesn't exist (user adds secrets manually)
@@ -924,37 +870,9 @@ if echo "$AI_MODULE_CHECK" | grep -q "full"; then
     test_pass "Default .env created"
 
     AI_VERIFY=$(ws_ssh '
-    echo "claude=$(~/.npm-global/bin/claude --version 2>/dev/null | head -1)"
-    echo "gemini=$(~/.npm-global/bin/gemini --version 2>/dev/null | head -1)"
     echo "antigravity-cli=$(test -d $HOME/.gemini/antigravity-cli && echo exists || echo missing)"
     ')
-    echo "$AI_VERIFY" | grep -q "claude=.*Claude" && test_pass "Claude Code" || test_warn "Claude Code not verified"
-    echo "$AI_VERIFY" | grep -q "gemini=[0-9]" && test_pass "Gemini CLI" || test_warn "Gemini CLI not verified"
-    echo "$AI_VERIFY" | grep -q "antigravity-cli=exists" && test_pass "Antigravity CLI" || test_warn "Antigravity CLI not verified"
-    # F-0116: Antigravity 2.0 IDE verification removed — IDE has been removed.
-
-elif echo "$AI_MODULE_CHECK" | grep -q "minimal"; then
-    # Minimal AI tools (dev profile): Claude Code only
-    log "Installing Claude Code only (ai-tools-minimal profile)..."
-    if ws_ssh_long '
-    '"${NIX_SOURCE}"'
-    export NPM_CONFIG_PREFIX=$HOME/.npm-global
-    mkdir -p $HOME/.npm-global/bin
-    npm install -g @anthropic-ai/claude-code
-    '; then
-        test_pass "Claude Code installed (ai-tools-minimal)"
-    else
-        test_warn "Claude Code install had errors"
-    fi
-
-    ws_ssh 'touch $HOME/.env'
-    test_pass "Default .env created"
-
-else
-    log "Skipping AI tools (module 'ai-tools' not enabled)"
-    ws_ssh 'touch $HOME/.env'
-    test_pass "Default .env created"
-fi
+    echo "$AI_VERIFY" | grep -q "antigravity-cli=exists" && test_pass "Antigravity CLI" || test_warn "Antigravity CLI verified"
 
 # =========================================================================
 step "Step 18/19: Create Cloud Scheduler (daily stop at 8PM Central)"
@@ -1127,9 +1045,7 @@ echo " Cloud Scheduler auto-stops daily at 8PM Central (start manually when need
 echo " Connect via browser at the URL above (noVNC desktop)."
 echo ""
 echo " Installed: Sway (Tokyo Night), Nix, ZSH, Starship,"
-echo "   Operator Mono font, Chrome, VS Code, IntelliJ, Windsurf,"
-echo "   Cursor, Zed, Antigravity, Claude Code, Gemini CLI,"
-echo "   Codex, Cody, OpenCode, Aider, pi-coding-agent,"
+echo "   Operator Mono font, Chrome, VS Code, Antigravity,"
 echo "   Go, Rust (rustup), Python (pyenv), Ruby (rbenv), Node.js (Nix),"
 echo "   Wofi app launcher, snippet picker, clipboard manager"
 echo "============================================="

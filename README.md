@@ -86,7 +86,7 @@ Once started, deploy configurations and initialize the persistent Nix store from
 
 ```bash
 cd ..
-bash scripts/deploy-configs.sh -p YOUR_PROJECT_ID --profile full
+bash scripts/deploy-configs.sh -p YOUR_PROJECT_ID
 ```
 
 ### Step 6: Restart and Connect
@@ -110,24 +110,6 @@ gcloud workstations describe sway-workstation \
 
 Open `https://<host>` in your browser.
 
-### Install Profiles
-
-You can specify a profile when running `deploy-configs.sh` to control which tools are installed:
-
-| Profile | What's Included | Build Time |
-|---------|----------------|------------|
-| `minimal` | Sway desktop, ZSH, Chrome, Antigravity, dev tools | ~14 min |
-| `dev` | minimal + tmux + Claude Code | ~25 min |
-| `ai` | dev + AI IDEs + AI CLI tools | ~35 min |
-| `full` | Everything including Go, Rust, Python, Ruby | ~55 min |
-
-```bash
-# Default (full profile)
-bash scripts/deploy-configs.sh -p YOUR_PROJECT_ID --profile full
-
-# AI profile (IDEs + AI tools, no languages)
-bash scripts/deploy-configs.sh -p YOUR_PROJECT_ID --profile ai
-```
 
 ## After Setup
 
@@ -172,14 +154,14 @@ A Cloud Scheduler job stops the workstation daily at **8:00 PM Central** to save
 | **Terminal** | foot terminal, ZSH + Starship prompt, DejaVu Sans Mono font (size 14), tmux with Tokyo Night theme |
 | **Fonts** | DejaVu Sans Mono (system), Operator Mono (proprietary OTF), Cascadia Code, Fira Code, JetBrains Mono (via Nix) |
 | **Browsers** | Google Chrome, Chromium |
-| **IDEs** | Antigravity IDE, VS Code, Cursor, Zed, IntelliJ IDEA, Neovim (custom config) |
-| **AI Tools** | Antigravity CLI, Claude Code, Gemini CLI, Codex CLI, OpenCode, Aider, Cody CLI, pi-coding-agent |
+| **IDEs** | Antigravity IDE, VS Code, Neovim (custom config) |
+| **AI Tools** | Antigravity CLI, Cody CLI |
 | **Languages** | Go (latest), Rust (via rustup), Python 3.12 (via pyenv), Ruby 3.3 (via rbenv), Node.js 22 (via Nix) |
 | **Apps** | Antigravity Hub, tmux, ripgrep, fd, jq, ffmpeg, wofi, thunar, clipman |
 | **Networking** | Tailscale VPN (opt-in via `~/.env`) |
 | **Auto-stop** | Cloud Scheduler stops workstation daily at 8PM Central |
 | **Boot apps** | 4 workspaces auto-launch: Antigravity IDE (ws1), VS Code (ws2), terminal (ws3), Chrome (ws4) |
-| **Profiles** | Composable install: minimal (14 min), dev, ai, full (55 min) — `--profile` flag |
+| **Deployment** | Installs standard base packages, VS Code, Cody CLI, and Antigravity tools |
 | **Boot tests** | 190+ automated tests run on every boot — results at `~/logs/boot-test-results.txt` |
 | **Packages** | Managed via Nix Home Manager on persistent disk |
 

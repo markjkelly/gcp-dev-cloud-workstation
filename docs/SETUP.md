@@ -6,38 +6,9 @@ Complete guide for recreating the Cloud Workstation from scratch in the `YOUR_PR
 
 **Reference blog:** https://medium.com/google-cloud/running-antigravity-on-a-browser-tab-6298bb7e47c4
 
-> **Tip:** Use `--profile` to control what gets installed. See [Install Profiles](#install-profiles) below.
 
 ---
 
-## Install Profiles
-
-Choose a profile to control build time and installed components:
-
-| Profile | What's Included | Build Time |
-|---------|----------------|------------|
-| `minimal` | Sway desktop, ZSH, Chrome, Antigravity, dev tools | ~14 min |
-| `dev` | minimal + tmux + Claude Code | ~25 min |
-| `ai` | dev + AI IDEs + AI CLI tools | ~35 min |
-| `full` | Everything including Go, Rust, Python, Ruby | ~55 min |
-
-```bash
-# Default (full profile)
-bash scripts/ws.sh setup -p YOUR_PROJECT_ID
-
-# Minimal profile (fastest)
-bash scripts/ws.sh setup -p YOUR_PROJECT_ID --profile minimal
-
-# AI profile (IDEs + AI tools, no languages)
-bash scripts/ws.sh setup -p YOUR_PROJECT_ID --profile ai
-
-# Custom modules
-bash scripts/ws.sh setup -p YOUR_PROJECT_ID --profile custom --modules "ides,ai-tools"
-```
-
-The selected profile creates a `~/.ws-modules` config file on the workstation. Boot scripts check this file and skip disabled modules. Tests report SKIP for disabled modules instead of FAIL.
-
----
 
 ## Table of Contents
 
@@ -283,7 +254,7 @@ gcloud workstations start sway-workstation \
 Run the helper script from the repository root to deploy configurations, boot scripts, custom fonts, and run the Nix package manager initialization on the persistent HOME disk:
 
 ```bash
-bash scripts/deploy-configs.sh -p YOUR_PROJECT_ID --profile full
+bash scripts/deploy-configs.sh -p YOUR_PROJECT_ID
 ```
 
 After deployment completes, **stop and start** your workstation to trigger the startup boot scripts:
@@ -755,20 +726,12 @@ Add to `~/.bashrc` (or `~/.zshrc`):
 export PATH="$HOME/.npm-global/bin:$PATH"
 ```
 
-### 10.3 Install Claude Code
+### 10.3 Install Cody CLI
 
 ```bash
-npm install -g @anthropic-ai/claude-code
-claude --version
-# Expected: 2.1.80 (or later)
-```
-
-### 10.4 Install Gemini CLI
-
-```bash
-npm install -g @anthropic-ai/gemini-cli  # or the correct package name
-gemini --version
-# Expected: 0.34.0 (or later)
+npm install -g @sourcegraph/cody
+cody --version
+# Expected: latest version
 ```
 
 ---
@@ -1046,7 +1009,7 @@ Sway Compositor (WLR_BACKENDS=headless)
 | `/home/user/.nix-profile/` | Persistent | Yes | Nix profile symlinks |
 | `/home/user/.config/` | Persistent | Yes | Sway, Waybar, Neovim, foot configs |
 | `/home/user/.local/share/antigravity-ide/` | Persistent | Yes | Antigravity IDE v2 binary |
-| `/home/user/.npm-global/` | Persistent | Yes | Claude Code, Gemini CLI |
+| `/home/user/.npm-global/` | Persistent | Yes | Cody CLI |
 | `/nix/` | Ephemeral (bind mount restored on boot) | Restored | Bind mount target from /home/user/nix |
 | `/etc/profile.d/nvidia.sh` | Ephemeral (recreated on boot) | Recreated | NVIDIA PATH/LD_LIBRARY_PATH |
 | `/var/lib/nvidia/` | Ephemeral (provided by GPU driver) | Re-provisioned | NVIDIA drivers, libraries, nvidia-smi |
@@ -1063,8 +1026,7 @@ Sway Compositor (WLR_BACKENDS=headless)
 | `~/.config/nvim/init.lua` | Neovim configuration |
 | `~/.config/home-manager/home.nix` | Nix Home Manager declaration |
 | `~/.local/share/antigravity-ide/antigravity-ide` | Antigravity IDE v2 binary |
-| `~/.npm-global/bin/claude` | Claude Code CLI |
-| `~/.npm-global/bin/gemini` | Gemini CLI |
+| `~/.npm-global/bin/cody` | Cody CLI |
 | `/var/lib/nvidia/bin/nvidia-smi` | NVIDIA system management |
 | `/etc/workstation-startup.d/250_bootstrap.sh` | Boot script: triggers ~/boot/setup.sh |
 | `/etc/workstation-startup.d/100_add-xstartup.sh` | Boot script: VNC xstartup for GNOME |

@@ -106,9 +106,6 @@ if ws_module_enabled "ides"; then
     log "--- IDEs ---"
     check_binary "VSCode" "code"
     check_version "VSCode" "code --version"
-    check_binary "Cursor" "cursor"
-    check_binary "Zed" "zeditor"
-    check_binary "IntelliJ IDEA" "idea-oss"
 else
     log "--- IDEs --- (SKIPPED — module disabled)"
     test_skip "IDEs (module disabled)"
@@ -280,12 +277,8 @@ fi
 log ""
 if ws_module_enabled "ai-tools"; then
     log "--- AI CLI Tools ---"
-    check_binary "Claude Code" "claude"
-    check_binary "OpenCode" "opencode"
-elif ws_module_enabled "ai-tools-minimal"; then
-    log "--- AI CLI Tools (minimal) ---"
-    check_binary "Claude Code" "claude"
-    test_skip "OpenCode (ai-tools-minimal)"
+    check_binary "Cody CLI" "cody"
+    check_binary "Antigravity CLI" "antigravity-cli"
 else
     log "--- AI CLI Tools --- (SKIPPED — module disabled)"
     test_skip "AI CLI Tools (module disabled)"
@@ -438,11 +431,9 @@ log ""
 log "--- Sway Config Checks ---"
 SWAY_CFG="$HOME_DIR/.config/sway/config"
 check_grep "xwayland disable" "xwayland disable" "$SWAY_CFG"
-check_grep "IntelliJ DISPLAY=:0" "DISPLAY=:0.*idea-oss" "$SWAY_CFG"
 check_grep "VSCode LD_LIBRARY_PATH" "LD_LIBRARY_PATH.*code" "$SWAY_CFG"
 check_grep "Wofi XDG_DATA_DIRS" "XDG_DATA_DIRS" "$SWAY_CFG"
 check_grep "Clipman keybinding" "mod+a.*clipman" "$SWAY_CFG"
-check_grep "Windsurf keybinding" "mod+w.*windsurf" "$SWAY_CFG"
 check_grep "Apps button click" "button1.*wofi" "$SWAY_CFG"
 # F-0116: Antigravity IDE keybindings removed — assert they are ABSENT
 if grep -qE 'bindsym.*mod\+g.*antigravity|bindsym.*mod\+n.*antigravity' "$SWAY_CFG"; then
@@ -624,7 +615,7 @@ else
     test_skip "Language dirs (languages module disabled)"
 fi
 check_dir "npm-global" "$HOME_DIR/.npm-global"
-# npm global prefix must point at persistent disk so Claude Code's
+# npm global prefix must point at persistent disk so Cody CLI's
 # auto-updater (and any `npm -g`) doesn't EACCES on /usr/lib/node_modules.
 npm_prefix=$(runuser -u $USER -- npm config get prefix 2>/dev/null)
 if [ "$npm_prefix" = "$HOME_DIR/.npm-global" ]; then
@@ -825,11 +816,7 @@ if ws_module_enabled "ai-tools"; then
         test_fail "07-apps.sh never ran (~/logs/app-update.log missing)"
     fi
 
-    check_version "Claude Code" "claude --version"
-    check_version "OpenCode" "opencode -v"
-elif ws_module_enabled "ai-tools-minimal"; then
-    check_version "Claude Code" "claude --version"
-    test_skip "Full AI tools versions (ai-tools-minimal profile)"
+    check_version "Cody CLI" "cody --version"
 else
     test_skip "AI tool versions (module disabled)"
 fi
@@ -1064,12 +1051,6 @@ if grep -q 'npm global packages: update FAILED' "$APPS_SCRIPT" 2>/dev/null; then
     test_pass "F-0121: 07-apps.sh logs npm update FAILED on non-zero exit"
 else
     test_fail "F-0121: 07-apps.sh does not log npm update FAILED (may still swallow errors)"
-fi
-
-if grep -q 'OpenCode: update FAILED\|OpenCode.*FAILED' "$APPS_SCRIPT" 2>/dev/null; then
-    test_pass "F-0121: 07-apps.sh logs OpenCode update FAILED on non-zero exit"
-else
-    test_fail "F-0121: 07-apps.sh does not log OpenCode FAILED (may still swallow errors)"
 fi
 
 if grep -q 'Nix/Home Manager: update FAILED\|Home Manager.*FAILED' "$APPS_SCRIPT" 2>/dev/null; then

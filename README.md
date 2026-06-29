@@ -155,13 +155,13 @@ A Cloud Scheduler job stops the workstation daily at **8:00 PM Central** to save
 | **Fonts** | DejaVu Sans Mono (system), Operator Mono (proprietary OTF), Cascadia Code, Fira Code, JetBrains Mono (via Nix) |
 | **Browsers** | Google Chrome, Chromium |
 | **IDEs** | Antigravity IDE, VS Code, Neovim (custom config) |
-| **AI Tools** | Antigravity CLI, Cody CLI |
+| **AI Tools** | Antigravity CLI |
 | **Languages** | Go (latest), Rust (via rustup), Python 3.12 (via pyenv), Ruby 3.3 (via rbenv), Node.js 22 (via Nix) |
 | **Apps** | Antigravity Hub, tmux, ripgrep, fd, jq, ffmpeg, wofi, thunar, clipman |
 | **Networking** | Tailscale VPN (opt-in via `~/.env`) |
 | **Auto-stop** | Cloud Scheduler stops workstation daily at 8PM Central |
 | **Boot apps** | 4 workspaces auto-launch: Antigravity IDE (ws1), VS Code (ws2), terminal (ws3), Chrome (ws4) |
-| **Deployment** | Installs standard base packages, VS Code, Cody CLI, and Antigravity tools |
+| **Deployment** | Installs standard base packages, VS Code, and Antigravity tools |
 | **Boot tests** | 190+ automated tests run on every boot — results at `~/logs/boot-test-results.txt` |
 | **Packages** | Managed via Nix Home Manager on persistent disk |
 

@@ -850,16 +850,11 @@ fi
 step "Step 17/19: Install AI tools and Antigravity"
 # =========================================================================
 # Check for ai-tools or ai-tools-minimal (dev profile gets Claude Code only)
-    # Install remaining NPM tools (Cody CLI)
-    if ws_ssh_long '
-    '"${NIX_SOURCE}"'
-    export NPM_CONFIG_PREFIX=$HOME/.npm-global
-    mkdir -p $HOME/.npm-global/bin
-    npm install -g @sourcegraph/cody
-    '; then
-        test_pass "NPM AI tools installed"
+    # Ensure npm global directory is initialized
+    if ws_ssh 'mkdir -p $HOME/.npm-global/bin'; then
+        test_pass "NPM global directory initialized"
     else
-        test_warn "NPM AI tools install had errors"
+        test_warn "NPM global directory initialization failed"
     fi
 
     # Install Antigravity CLI via curl (persists to ~/.gemini/antigravity-cli on persistent disk)
@@ -875,10 +870,8 @@ step "Step 17/19: Install AI tools and Antigravity"
     test_pass "Default .env created"
 
     AI_VERIFY=$(ws_ssh '
-    echo "cody=$(~/.npm-global/bin/cody --version 2>/dev/null | head -1)"
     echo "antigravity-cli=$(test -d $HOME/.gemini/antigravity-cli && echo exists || echo missing)"
     ')
-    echo "$AI_VERIFY" | grep -q "cody=[0-9]" && test_pass "Cody CLI" || test_warn "Cody CLI not verified"
     echo "$AI_VERIFY" | grep -q "antigravity-cli=exists" && test_pass "Antigravity CLI" || test_warn "Antigravity CLI verified"
 
 # =========================================================================
@@ -1052,9 +1045,7 @@ echo " Cloud Scheduler auto-stops daily at 8PM Central (start manually when need
 echo " Connect via browser at the URL above (noVNC desktop)."
 echo ""
 echo " Installed: Sway (Tokyo Night), Nix, ZSH, Starship,"
-echo "   Operator Mono font, Chrome, VS Code, IntelliJ, Windsurf,"
-echo "   Cursor, Zed, Antigravity, Claude Code, Gemini CLI,"
-echo "   Codex, Cody, OpenCode, Aider, pi-coding-agent,"
+echo "   Operator Mono font, Chrome, VS Code, Antigravity,"
 echo "   Go, Rust (rustup), Python (pyenv), Ruby (rbenv), Node.js (Nix),"
 echo "   Wofi app launcher, snippet picker, clipboard manager"
 echo "============================================="

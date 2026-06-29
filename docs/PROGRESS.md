@@ -67,3 +67,33 @@ Milestone 1: Initial Setup
 ### Next Steps
 - Triage and fix issues #5 and #6.
 - Rerun E2E test to ensure complete and successful setup.
+
+## Session 3 — 2026-06-29 (F-0002 Continuation: IAM Binding Fix)
+
+### Date
+2026-06-29
+
+### Milestone
+Milestone 1: Initial Setup
+
+### Completed
+- **F-0002 Continuation**:
+  - Investigated the SSH timeout issue causing the previous E2E test failure. Found that `gcloud workstations configs add-iam-policy-binding` and `gcloud workstations add-iam-policy-binding` are not valid gcloud commands, causing the bindings to fail silently and leading to SSH timeouts since the Cloud Build SA wasn't granted `roles/workstations.user`.
+  - Added a python helper function `add_ws_iam_binding` to `scripts/cloud-build-setup.sh` that securely modifies the JSON IAM policy instead.
+  - Replaced all calls to the invalid IAM commands in `scripts/cloud-build-setup.sh`.
+  - Pushed fixes to `feature/scratch-e2e-test` and re-triggered `scripts/ws.sh setup`.
+  - Verified Cloud Build successfully proceeds past Step 8.
+
+### Files Changed
+- `scripts/cloud-build-setup.sh`
+- `docs/BACKLOG.md`
+- `docs/PROGRESS.md`
+- `docs/RELEASENOTES.md`
+
+### Decisions
+- Replaced non-existent `gcloud workstations configs add-iam-policy-binding` commands with `get-iam-policy` / Python JSON mutation / `set-iam-policy` workflow.
+- Updated `cloud-build-setup.sh` safely rather than relying on another CLI tool.
+
+### Next Steps
+- Validate that the Cloud Workstation is accessible to the user via Chrome Remote Desktop.
+- Ensure automated boot scripts run successfully.

@@ -1,5 +1,10 @@
 # Release Notes — Cloud Workstation
 
+## v1.1.2 — IAM Binding Bugfix (2026-06-29)
+
+### Fixed
+- **Cloud Build SSH Timeout** — Replaced invalid `gcloud workstations configs add-iam-policy-binding` commands with a python helper function to correctly modify workstation IAM policies, fixing the SSH timeout during workstation setup.
+
 ## v1.1.1 — E2E Test & Setup Script Fixes (2026-06-29)
 
 ### Added

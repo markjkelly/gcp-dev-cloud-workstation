@@ -175,7 +175,6 @@ All shortcuts use `CTRL+SHIFT` as the modifier (works through Chrome Remote Desk
 | `CTRL+SHIFT+T` | New terminal (foot) |
 | `CTRL+SHIFT+B` | Chrome browser |
 | `CTRL+SHIFT+Y` | VS Code |
-| `CTRL+SHIFT+M` | IntelliJ IDEA |
 | `CTRL+SHIFT+R` | App launcher (wofi) |
 | `CTRL+SHIFT+A` | Clipboard history (clipman) |
 | `CTRL+SHIFT+S` | Snippet picker |

@@ -97,3 +97,30 @@ Milestone 1: Initial Setup
 ### Next Steps
 - Validate that the Cloud Workstation is accessible to the user via Chrome Remote Desktop.
 - Ensure automated boot scripts run successfully.
+
+## Session 4 — 2026-06-29 (F-0002 Continuation: IAM Target Resource Fix)
+
+### Date
+2026-06-29
+
+### Milestone
+Milestone 1: Initial Setup
+
+### Completed
+- **F-0002 Continuation**:
+  - The previous IAM binding update in Step 8 was targeting the `config` resource instead of the `workstation` resource for `roles/workstations.user`, which caused an `INVALID_ARGUMENT` error. 
+  - User provided a manual fix in `scripts/cloud-build-setup.sh` changing the IAM bindings in Step 8 to use `add_ws_iam_binding "workstation" "$WORKSTATION" ...` instead of `"config" "$CONFIG"`.
+  - Committed and pushed this change on the `feature/scratch-e2e-test` branch.
+  - Re-ran the full workstation setup script `scripts/ws.sh setup -p prj-c-workstations-j68o` and monitored Cloud Build job `27348abf-a24c-4fc6-89a8-81a8d027bc0b`.
+  - Confirmed the setup successfully passed Step 8 and continued into the final setup steps (Persisting Nix store).
+
+### Files Changed
+- `scripts/cloud-build-setup.sh`
+- `docs/PROGRESS.md`
+- `docs/RELEASENOTES.md`
+
+### Decisions
+- Replaced the target resource from `config` to `workstation` in `add_ws_iam_binding` because `roles/workstations.user` is only supported on the Workstation instance itself, not the config.
+
+### Next Steps
+- Verify the completed workstation cluster is functional.

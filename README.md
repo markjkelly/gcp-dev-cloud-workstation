@@ -89,26 +89,45 @@ cd ..
 bash scripts/deploy-configs.sh -p YOUR_PROJECT_ID
 ```
 
-### Step 6: Restart and Connect
+### Step 6: Restart and Configure
 
-Stop and start your workstation to trigger the persistent boot scripts (which mount `/nix`, start the Sway desktop, and run boot checks):
+Stop and start your workstation to trigger the persistent boot scripts (which mount `/nix`, start the Sway desktop, and configure the desktop environment):
 
 ```bash
 gcloud workstations stop sway-workstation --cluster=main-cluster --region=us-central1 --project=YOUR_PROJECT_ID
 gcloud workstations start sway-workstation --cluster=main-cluster --region=us-central1 --project=YOUR_PROJECT_ID
 ```
 
-Connect using the web proxy URL outputted by `terraform apply` or retrieve it with:
+### Step 7: Configure Chrome Remote Desktop (CRD)
 
-```bash
-gcloud workstations describe sway-workstation \
-  --cluster=main-cluster \
-  --region=us-central1 \
-  --project=YOUR_PROJECT_ID \
-  --format="value(host)"
-```
+To connect to your Sway desktop session, you must authorize and link the workstation with Chrome Remote Desktop:
 
-Open `https://<host>` in your browser.
+1. SSH into the workstation:
+   ```bash
+   gcloud workstations ssh sway-workstation \
+     --cluster=main-cluster \
+     --region=us-central1 \
+     --project=YOUR_PROJECT_ID
+   ```
+2. Run the interactive CRD setup script:
+   ```bash
+   setup-crd.sh
+   ```
+3. Follow the terminal prompts:
+   - Navigate to [remotedesktop.google.com/headless](https://remotedesktop.google.com/headless) in your local web browser.
+   - Authorize the connection, copy the command for **Debian Linux**, and paste it into the SSH terminal.
+   - Set a 6-digit PIN when prompted.
+
+### Step 8: Access the Desktop
+
+Once configured, access your workstation remotely:
+
+1. Navigate to [remotedesktop.google.com/access](https://remotedesktop.google.com/access) in your browser.
+2. Select your workstation name and enter the 6-digit PIN you created.
+3. Once connected, resize your nested Sway desktop to fit your screen resolution by running:
+   ```bash
+   crd-resize 2560 1440  # Replace with your desired width and height
+   ```
 
 
 ## After Setup

@@ -180,7 +180,7 @@ A Cloud Scheduler job stops the workstation daily at **8:00 PM Central** to save
 | **Auto-stop** | Cloud Scheduler stops workstation daily at 8PM Central |
 | **Boot apps** | 4 workspaces auto-launch: Antigravity IDE (ws1), VS Code (ws2), terminal (ws3), Chrome (ws4) |
 | **Profiles** | Composable install: minimal (14 min), dev, ai, full (55 min) — `--profile` flag |
-| **Boot tests** | 80+ automated tests run on every boot — results at `~/logs/boot-test-results.txt` |
+| **Boot tests** | 160+ automated tests run on every boot — results at `~/logs/boot-test-results.txt` |
 | **Packages** | Managed via Nix Home Manager on persistent disk |
 
 ## Keyboard Shortcuts
@@ -257,7 +257,7 @@ You can then SSH via `ssh user@<workstation-tailscale-hostname>`.
 
 ## Boot Tests
 
-Every boot runs 80+ automated tests to verify the workstation is healthy. Results are saved to:
+Every boot runs 160+ automated tests to verify the workstation is healthy. Results are saved to:
 
 - `~/logs/boot-test-results.txt` — full PASS/FAIL/WARN details
 - `~/logs/boot-test-summary.txt` — one-line summary (e.g., `PASS: 77 | FAIL: 0 | WARN: 3`)

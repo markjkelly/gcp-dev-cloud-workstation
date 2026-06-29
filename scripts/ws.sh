@@ -15,10 +15,17 @@
 
 set -euo pipefail
 
-REGION="us-west1"
+REGION="us-central1"
 # Auto-detect repo URL from git remote (falls back to placeholder if not in a git repo)
 SCRIPT_DIR_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_URL=$(git -C "$SCRIPT_DIR_ROOT" remote get-url origin 2>/dev/null || echo "https://github.com/markjkelly/cloud-workstation.git")
+
+# Convert SSH format repository URLs (git@github.com:...) to HTTPS format (https://github.com/...)
+# dynamically so that Cloud Build can clone the public repo without SSH credentials/keys.
+if [[ "$REPO_URL" == git@github.com:* ]]; then
+    REPO_URL="https://github.com/${REPO_URL#git@github.com:}"
+fi
+
 CLUSTER="workstation-cluster"
 CONFIG="ws-config"
 WORKSTATION="dev-workstation"
@@ -274,7 +281,7 @@ steps:
 timeout: 7200s
 substitutions:
   _REPO_URL: 'https://github.com/markjkelly/cloud-workstation.git'
-  _REGION: 'us-west1'
+  _REGION: 'us-central1'
   _WEBHOOK_URL: ''
   _EMAIL_FUNC_URL: ''
   _EMAIL: ''

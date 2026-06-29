@@ -1,5 +1,17 @@
 # Release Notes — Cloud Workstation
 
+## v1.1.0 — Tooling Cleanups & Deployment Simplification (2026-06-29)
+
+### Added
+- **Cody CLI** — Integrated as the standard AI CLI companion instead of Claude Code.
+- **Antigravity CLI** — Verified presence in AI tools.
+
+### Removed
+- **Unused IDEs** — Removed Cursor, Zed, and IntelliJ IDEA configurations and keybindings.
+- **Unused AI Tools** — Removed Claude Code, Gemini CLI, Codex CLI, pi-coding-agent, Aider, and OpenCode.
+- **Profiles** — Removed the `--profile` flag option from deployment scripts. All deployments now configure the remaining base tools by default.
+- **Helper Scripts** — Removed `claude-tmux` and `tmux-debug` scripts.
+
 ## v1.0.0 — Initial Repository Porting (2026-06-29)
 
 ### Added

@@ -726,13 +726,6 @@ Add to `~/.bashrc` (or `~/.zshrc`):
 export PATH="$HOME/.npm-global/bin:$PATH"
 ```
 
-### 10.3 Install Cody CLI
-
-```bash
-npm install -g @sourcegraph/cody
-cody --version
-# Expected: latest version
-```
 
 ---
 
@@ -1009,7 +1002,7 @@ Sway Compositor (WLR_BACKENDS=headless)
 | `/home/user/.nix-profile/` | Persistent | Yes | Nix profile symlinks |
 | `/home/user/.config/` | Persistent | Yes | Sway, Waybar, Neovim, foot configs |
 | `/home/user/.local/share/antigravity-ide/` | Persistent | Yes | Antigravity IDE v2 binary |
-| `/home/user/.npm-global/` | Persistent | Yes | Cody CLI |
+| `/home/user/.npm-global/` | Persistent | Yes | npm global packages |
 | `/nix/` | Ephemeral (bind mount restored on boot) | Restored | Bind mount target from /home/user/nix |
 | `/etc/profile.d/nvidia.sh` | Ephemeral (recreated on boot) | Recreated | NVIDIA PATH/LD_LIBRARY_PATH |
 | `/var/lib/nvidia/` | Ephemeral (provided by GPU driver) | Re-provisioned | NVIDIA drivers, libraries, nvidia-smi |
@@ -1026,7 +1019,6 @@ Sway Compositor (WLR_BACKENDS=headless)
 | `~/.config/nvim/init.lua` | Neovim configuration |
 | `~/.config/home-manager/home.nix` | Nix Home Manager declaration |
 | `~/.local/share/antigravity-ide/antigravity-ide` | Antigravity IDE v2 binary |
-| `~/.npm-global/bin/cody` | Cody CLI |
 | `/var/lib/nvidia/bin/nvidia-smi` | NVIDIA system management |
 | `/etc/workstation-startup.d/250_bootstrap.sh` | Boot script: triggers ~/boot/setup.sh |
 | `/etc/workstation-startup.d/100_add-xstartup.sh` | Boot script: VNC xstartup for GNOME |

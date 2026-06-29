@@ -277,7 +277,6 @@ fi
 log ""
 if ws_module_enabled "ai-tools"; then
     log "--- AI CLI Tools ---"
-    check_binary "Cody CLI" "cody"
     check_binary "Antigravity CLI" "antigravity-cli"
 else
     log "--- AI CLI Tools --- (SKIPPED — module disabled)"
@@ -615,8 +614,8 @@ else
     test_skip "Language dirs (languages module disabled)"
 fi
 check_dir "npm-global" "$HOME_DIR/.npm-global"
-# npm global prefix must point at persistent disk so Cody CLI's
-# auto-updater (and any `npm -g`) doesn't EACCES on /usr/lib/node_modules.
+# npm global prefix must point at persistent disk so that
+# any `npm -g` doesn't EACCES on /usr/lib/node_modules.
 npm_prefix=$(runuser -u $USER -- npm config get prefix 2>/dev/null)
 if [ "$npm_prefix" = "$HOME_DIR/.npm-global" ]; then
     test_pass "npm prefix = $npm_prefix"
@@ -816,7 +815,6 @@ if ws_module_enabled "ai-tools"; then
         test_fail "07-apps.sh never ran (~/logs/app-update.log missing)"
     fi
 
-    check_version "Cody CLI" "cody --version"
 else
     test_skip "AI tool versions (module disabled)"
 fi
@@ -1025,13 +1023,13 @@ fi
 # (b) 07-apps.sh calls wait_for_user_session before the first runuser update
 if grep -q 'wait_for_user_session' "$APPS_SCRIPT" 2>/dev/null; then
     # Check the call site appears before the first runuser update line
-    # (i.e., call appears before "npm update" or "Antigravity CLI" lines)
+    # (i.e., call appears before "Installing/updating Antigravity CLI")
     call_line=$(grep -n 'wait_for_user_session' "$APPS_SCRIPT" 2>/dev/null | grep -v '()' | head -1 | cut -d: -f1)
-    npm_line=$(grep -n 'npm update -g' "$APPS_SCRIPT" 2>/dev/null | head -1 | cut -d: -f1)
-    if [ -n "$call_line" ] && [ -n "$npm_line" ] && [ "$call_line" -lt "$npm_line" ]; then
-        test_pass "F-0121: 07-apps.sh calls wait_for_user_session before npm update (line $call_line < $npm_line)"
+    cli_line=$(grep -n 'Installing/updating Antigravity CLI' "$APPS_SCRIPT" 2>/dev/null | head -1 | cut -d: -f1)
+    if [ -n "$call_line" ] && [ -n "$cli_line" ] && [ "$call_line" -lt "$cli_line" ]; then
+        test_pass "F-0121: 07-apps.sh calls wait_for_user_session before Antigravity CLI install (line $call_line < $cli_line)"
     else
-        test_fail "F-0121: 07-apps.sh does not call wait_for_user_session before npm update (call=$call_line, npm=$npm_line)"
+        test_fail "F-0121: 07-apps.sh does not call wait_for_user_session before Antigravity CLI install (call=$call_line, cli=$cli_line)"
     fi
 else
     test_fail "F-0121: 07-apps.sh does not call wait_for_user_session"
@@ -1047,12 +1045,6 @@ fi
 # (d) 07-apps.sh per-step failure logging: no unconditional "complete" after runuser calls
 # We check that each runuser update step uses if/else with FAILED logging.
 # Pattern: "FAILED" appears alongside each update step keyword.
-if grep -q 'npm global packages: update FAILED' "$APPS_SCRIPT" 2>/dev/null; then
-    test_pass "F-0121: 07-apps.sh logs npm update FAILED on non-zero exit"
-else
-    test_fail "F-0121: 07-apps.sh does not log npm update FAILED (may still swallow errors)"
-fi
-
 if grep -q 'Nix/Home Manager: update FAILED\|Home Manager.*FAILED' "$APPS_SCRIPT" 2>/dev/null; then
     test_pass "F-0121: 07-apps.sh logs Nix/Home Manager FAILED on non-zero exit"
 else

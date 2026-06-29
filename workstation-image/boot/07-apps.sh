@@ -2,7 +2,7 @@
 # =============================================================================
 # 07-apps.sh — Update apps to latest versions on boot
 # =============================================================================
-# Updates Cody CLI (npm), Nix apps (home-manager),
+# Updates Nix apps (home-manager),
 # Antigravity Hub, and Antigravity CLI.
 # Logs to ~/logs/app-update.log.
 # =============================================================================
@@ -292,15 +292,6 @@ Categories=Development;
 Terminal=false
 StartupWMClass=antigravity
 DESKTOP_EOF
-
-# --- Update npm global packages (Cody CLI) ---
-# F-0121: check exit status; log real success or failure (no unconditional "complete").
-log "Updating npm global packages..."
-if runuser -u $USER -- bash -c ". $NIX_SH && export NPM_CONFIG_PREFIX=$HOME_DIR/.npm-global && npm update -g @sourcegraph/cody" >> "$LOG_FILE" 2>&1; then
-    log "npm global packages: update OK"
-else
-    log "npm global packages: update FAILED (rc=$?) — check $LOG_FILE for details"
-fi
 
 # --- Install/update Antigravity CLI ---
 # F-0121: check exit status; log real success or failure.

@@ -117,6 +117,63 @@ retry() {
     return 1
 }
 
+# Helper to add IAM binding using get/set IAM policy to avoid missing gcloud commands
+add_ws_iam_binding() {
+    local resource_type=$1
+    local resource_name=$2
+    local member=$3
+    local role=$4
+
+    local tmp_policy="/tmp/policy_$$.json"
+    local set_cmd
+
+    if [ "$resource_type" = "config" ]; then
+        gcloud workstations configs get-iam-policy "$resource_name" \
+            --cluster="$CLUSTER" --region="$REGION" --project="$PROJECT_ID" \
+            --format=json > "$tmp_policy" 2>/dev/null || true
+        set_cmd="gcloud workstations configs set-iam-policy $resource_name $tmp_policy --cluster=$CLUSTER --region=$REGION --project=$PROJECT_ID"
+    elif [ "$resource_type" = "workstation" ]; then
+        gcloud workstations get-iam-policy "$resource_name" \
+            --config="$CONFIG" --cluster="$CLUSTER" --region="$REGION" --project="$PROJECT_ID" \
+            --format=json > "$tmp_policy" 2>/dev/null || true
+        set_cmd="gcloud workstations set-iam-policy $resource_name $tmp_policy --config=$CONFIG --cluster=$CLUSTER --region=$REGION --project=$PROJECT_ID"
+    else
+        return 1
+    fi
+
+    if [ ! -s "$tmp_policy" ]; then
+        echo '{"bindings":[]}' > "$tmp_policy"
+    fi
+
+    python3 -c "
+import json
+try:
+    with open('$tmp_policy', 'r') as f:
+        policy = json.load(f)
+except Exception:
+    policy = {}
+if 'bindings' not in policy:
+    policy['bindings'] = []
+found_role = False
+for b in policy['bindings']:
+    if b.get('role') == '$role':
+        found_role = True
+        if 'members' not in b:
+            b['members'] = []
+        if '$member' not in b['members']:
+            b['members'].append('$member')
+        break
+if not found_role:
+    policy['bindings'].append({'role': '$role', 'members': ['$member']})
+with open('$tmp_policy', 'w') as f:
+    json.dump(policy, f)
+"
+    local status=0
+    eval "$set_cmd" >/dev/null 2>&1 || status=$?
+    rm -f "$tmp_policy"
+    return $status
+}
+
 # Test helper: record pass/fail
 test_pass() { PASS=$((PASS + 1)); log "  PASS: $1"; }
 test_fail() { FAIL=$((FAIL + 1)); log "  FAIL: $1"; }
@@ -387,13 +444,9 @@ fi
 # Grant SSH access before attempting SSH — compute SA (Cloud Build) and user both need
 # workstations.user on the config, otherwise the SSH loop below will fail for 10 minutes.
 log "Granting workstations.user to compute SA and user on config..."
-gcloud workstations configs add-iam-policy-binding "$CONFIG" \
-    --project="$PROJECT_ID" --region="$REGION" --cluster="$CLUSTER" \
-    --member="serviceAccount:$COMPUTE_SA" --role="roles/workstations.user" 2>/dev/null || true
+add_ws_iam_binding "config" "$CONFIG" "serviceAccount:$COMPUTE_SA" "roles/workstations.user" || true
 if [ -n "$USER_ACCOUNT" ]; then
-    gcloud workstations configs add-iam-policy-binding "$CONFIG" \
-        --project="$PROJECT_ID" --region="$REGION" --cluster="$CLUSTER" \
-        --member="user:$USER_ACCOUNT" --role="roles/workstations.user" 2>/dev/null || true
+    add_ws_iam_binding "config" "$CONFIG" "user:$USER_ACCOUNT" "roles/workstations.user" || true
 fi
 sleep 10  # IAM propagation
 
@@ -437,11 +490,7 @@ step "Step 8b/19: Grant user access to workstation (browser UI)"
 # Now grant workstation-level IAM so the user can also connect via the browser UI.
 if [ -n "$USER_ACCOUNT" ]; then
     log "Granting workstations.user to $USER_ACCOUNT on workstation..."
-    if gcloud workstations add-iam-policy-binding "$WORKSTATION" \
-        --config="$CONFIG" --cluster="$CLUSTER" --region="$REGION" \
-        --project="$PROJECT_ID" \
-        --member="user:$USER_ACCOUNT" --role="roles/workstations.user" \
-        --quiet 2>/dev/null; then
+    if add_ws_iam_binding "workstation" "$WORKSTATION" "user:$USER_ACCOUNT" "roles/workstations.user"; then
         test_pass "Workstation browser access granted to $USER_ACCOUNT"
     else
         test_warn "Could not grant workstation browser access to $USER_ACCOUNT (may already exist)"
@@ -891,11 +940,7 @@ else
 fi
 
 # Grant scheduler SA workstations.user on the workstation
-gcloud workstations add-iam-policy-binding "$WORKSTATION" \
-    --config="$CONFIG" --cluster="$CLUSTER" --region="$REGION" \
-    --project="$PROJECT_ID" \
-    --member="serviceAccount:$SCHEDULER_SA" \
-    --role="roles/workstations.user" --quiet --format=none 2>/dev/null || true
+add_ws_iam_binding "workstation" "$WORKSTATION" "serviceAccount:$SCHEDULER_SA" "roles/workstations.user" || true
 
 # Remove old schedulers if they exist (name change)
 for old_job in ws-daily-start ws-weekday-start ws-weekday-stop; do

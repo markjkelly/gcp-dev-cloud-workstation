@@ -203,3 +203,41 @@ Milestone 1: Initial Setup
 
 ### Next Steps
 - Open PR for manual review and merge.
+
+## Session 8 — 2026-06-30 (F-0007: Fix Boot Test Failures on Fresh Workstation)
+
+### Date
+2026-06-30
+
+### Milestone
+Milestone 1: Initial Setup
+
+### Completed
+- **F-0007** (Fix Boot Test Failures on Fresh Workstation):
+  - Fixed systemd race condition: added `ws-app-updates.service` to `ws-boot-tests.service` `After=` directive in `03-sway.sh` so boot tests only run after app installation completes.
+  - Fixed font deployment: added font tar/deploy block in `cloud-build-setup.sh` Step 12 to deploy CascadiaCode, CaskaydiaCove, FiraCodeiScript to `~/boot/fonts/` and run `fc-cache -f`. Upgraded font check from `test_warn` to `test_fail`.
+  - Fixed font cache rebuild: added `runuser -u user -- fc-cache -f` fallback in `04-fonts.sh` that works without Nix profile.
+  - Fixed stale test assertions: removed 4 F-0125 IDE cleanup assertions from `10-tests.sh` (cleanup code intentionally removed in F-0136). Changed anti-over-delete guards to SKIP when Hub or agy CLI not installed. Fixed agy CLI config dir check to accept both `~/.gemini/agy` and `~/.gemini/antigravity-cli`.
+  - Cleaned up stale `dev-fonts/dev-fonts/` duplicate directory.
+  - QA verified on `dev-workstation`: 191 tests, 189 PASS, 1 FAIL (expected — fonts not deployed on existing workstation), 1 WARN, 0 SKIP.
+  - Opened PR #19 against `main` (Closes GH #15, #16, #17, #18).
+
+### Files Changed
+- `workstation-image/boot/03-sway.sh`
+- `workstation-image/boot/04-fonts.sh`
+- `workstation-image/boot/10-tests.sh`
+- `scripts/cloud-build-setup.sh`
+- `dev-fonts/dev-fonts/` (deleted)
+- `docs/specs/F-0007-fix-boot-test-failures.md`
+- `docs/BACKLOG.md`
+- `docs/PROGRESS.md`
+- `docs/RELEASENOTES.md`
+
+### Decisions
+- Made anti-over-delete guards conditional to prevent false FAILs on fresh workstations where Hub and agy haven't been installed.
+- Kept the font fc-list FAIL as-is — it correctly identifies missing fonts. The cloud-build-setup.sh fix ensures fonts are deployed on new builds.
+- Accepted the agy CLI config directory path change (`~/.gemini/agy` → `~/.gemini/antigravity-cli`) and updated tests to check both paths.
+
+### Next Steps
+- PO merges PR #19 and tags release.
+- Re-run full cloud-build-setup.sh to verify 0 FAIL on fresh build.

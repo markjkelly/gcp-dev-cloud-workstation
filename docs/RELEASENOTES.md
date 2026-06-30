@@ -1,5 +1,17 @@
 # Release Notes — Cloud Workstation
 
+## v1.2.0 — Fix Boot Test Failures on Fresh Workstation (2026-06-30)
+
+### Fixed
+- **Systemd Race Condition** — `ws-boot-tests.service` now waits for both `ws-autolaunch.service` AND `ws-app-updates.service` before running `10-tests.sh`, preventing test failures caused by apps not yet installed. (Closes #15)
+- **Font Deployment on Fresh Builds** — `cloud-build-setup.sh` Step 12 now deploys CascadiaCode, CaskaydiaCove, and FiraCodeiScript fonts to `~/boot/fonts/` and runs `fc-cache -f` so custom fonts appear in `fc-list` immediately. Font verification upgraded from `test_warn` to `test_fail`. (Closes #16)
+- **Font Cache Rebuild** — Added `fc-cache -f` fallback in `04-fonts.sh` that works without Nix profile being sourced.
+- **Stale F-0125 Test Assertions** — Removed 4 IDE cleanup assertions that tested for side-effects of cleanup code intentionally removed in F-0136. (Closes #17)
+- **Anti-Over-Delete Guards** — Hub userData and agy CLI directory guards now SKIP instead of FAIL when the application hasn't been installed yet on the workstation. agy CLI config check accepts both `~/.gemini/agy` and `~/.gemini/antigravity-cli` paths. (Closes #18)
+
+### Removed
+- **Duplicate Font Directory** — Deleted stale `dev-fonts/dev-fonts/` nested duplicate of FiraCode fonts.
+
 ## v1.1.4 — Align Hub Launchers to Workspace 5 (2026-06-30)
 
 ### Changed

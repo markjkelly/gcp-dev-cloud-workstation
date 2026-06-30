@@ -130,7 +130,7 @@ if [ ! -f "/usr/bin/antigravity" ]; then
 else
     test_fail "Antigravity IDE still present at /usr/bin/antigravity (should be removed — F-0116)"
 fi
-check_dir "Antigravity CLI config" "$HOME_DIR/.gemini/antigravity-cli"
+check_dir "Antigravity CLI config" "$HOME_DIR/.gemini/agy"
 check_dir "Antigravity Hub directory" "$HOME_DIR/.local/share/antigravity-hub"
 check_file "Antigravity Hub symlink" "$HOME_DIR/.local/bin/antigravity-hub"
 # F-0125: Orphaned IDE dirs must be absent (cleaned by 07-apps.sh on every boot).
@@ -157,7 +157,7 @@ else
 fi
 # Over-deletion guard: Hub userData and CLI dirs MUST still be present
 check_dir "Hub userData preserved after F-0125 cleanup (anti-over-delete)" "$HOME_DIR/.config/Antigravity-Hub"
-check_dir "Antigravity CLI preserved after F-0125 cleanup (anti-over-delete)" "$HOME_DIR/.gemini/antigravity-cli"
+check_dir "Antigravity CLI preserved after F-0125 cleanup (anti-over-delete)" "$HOME_DIR/.gemini/agy"
 # F-0116: IDE ws2 launch removed — assert the IDE launch block is absent
 if grep -qE 'launch_and_wait[[:space:]]+2[[:space:]].*ANTIGRAVITY' "$HOME_DIR/boot/08-workspaces.sh"; then
     test_fail "08-workspaces.sh still launches IDE on ws2 via ANTIGRAVITY variable (F-0116 regression)"
@@ -277,7 +277,7 @@ fi
 log ""
 if ws_module_enabled "ai-tools"; then
     log "--- AI CLI Tools ---"
-    check_binary "Antigravity CLI" "antigravity-cli"
+    check_binary "Antigravity CLI" "agy"
 else
     log "--- AI CLI Tools --- (SKIPPED — module disabled)"
     test_skip "AI CLI Tools (module disabled)"
@@ -898,7 +898,7 @@ else
 fi
 
 # Check that the repo path constant is correct in the script
-REPO_PATH="/home/user/dev/git/cloud-workstation"
+REPO_PATH="/home/user/dev/git/gcp-dev-cloud-workstation"
 if grep -q "REPO_DIR=\"$REPO_PATH\"" "$SYNC_SCRIPT" 2>/dev/null; then
     test_pass "09-sync.sh has correct REPO_DIR constant"
 else
@@ -1348,7 +1348,7 @@ check_binary "F-0136: IDE v2 binary (antigravity-ide)" "antigravity-ide"
 check_file "F-0136: IDE v2 .desktop file" "$HOME_DIR/.local/share/applications/antigravity-ide.desktop"
 
 # (d) Sway config has IDE v2 for_window rule (app_id=antigravity-ide → ws1)
-SWAY_CONFIG_F0136="/home/user/dev/git/cloud-workstation/workstation-image/configs/sway/config"
+SWAY_CONFIG_F0136="/home/user/dev/git/gcp-dev-cloud-workstation/workstation-image/configs/sway/config"
 if [ -f "$SWAY_CONFIG_F0136" ]; then
     if grep -q 'for_window \[app_id="\^antigravity-ide\$"\] move container to workspace number 1' "$SWAY_CONFIG_F0136" 2>/dev/null; then
         test_pass "F-0136: sway config has IDE v2 placement rule (app_id=^antigravity-ide$ → ws1)"
@@ -1369,7 +1369,7 @@ if [ -f "$SWAY_CONFIG_F0136" ]; then
 fi
 
 # (f) Old F-0125 cleanup block must NOT be present in 07-apps.sh
-APPS_SCRIPT_F0136="/home/user/dev/git/cloud-workstation/workstation-image/boot/07-apps.sh"
+APPS_SCRIPT_F0136="/home/user/dev/git/gcp-dev-cloud-workstation/workstation-image/boot/07-apps.sh"
 if [ -f "$APPS_SCRIPT_F0136" ]; then
     if grep -q 'F-0125.*Remove orphaned' "$APPS_SCRIPT_F0136" 2>/dev/null; then
         test_fail "F-0136: 07-apps.sh still contains F-0125 orphaned IDE cleanup (should be removed)"
@@ -1381,7 +1381,7 @@ else
 fi
 
 # (g) 08-workspaces.sh launches IDE v2 on ws1
-WS_SCRIPT_F0136="/home/user/dev/git/cloud-workstation/workstation-image/boot/08-workspaces.sh"
+WS_SCRIPT_F0136="/home/user/dev/git/gcp-dev-cloud-workstation/workstation-image/boot/08-workspaces.sh"
 if [ -f "$WS_SCRIPT_F0136" ]; then
     if grep -q 'launch_and_wait 1.*antigravity-ide' "$WS_SCRIPT_F0136" 2>/dev/null; then
         test_pass "F-0136: 08-workspaces.sh launches IDE v2 on ws1"

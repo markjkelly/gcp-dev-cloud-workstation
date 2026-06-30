@@ -22,3 +22,6 @@
 | ID | Feature | Spec | Priority | Status | Owner | Branch | Dependencies | Feedback |
 |----|---------|------|----------|--------|-------|--------|--------------|----------|
 | F-0001 | Port agent context, skills, and docs | — | P0 | done | SWE-1 | main | — | Initial port from private cloud-workstation repository |
+| F-0002 | Scratch E2E Integration Test | — | P0 | done | PE | feature/scratch-e2e-test | — | Clean VM setup and validation on prj-c-workstations-j68o |
+| F-0004 | Dynamic Boot Sync Repo Clone | docs/specs/F-0004-dynamic-boot-sync-clone.md | P1 | done | SWE-1 | feature/dynamic-boot-sync-clone | F-0002 | Dynamically clone repo if missing on boot and update tests to agy |
+

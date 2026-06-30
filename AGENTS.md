@@ -101,16 +101,6 @@ The project has two clusters sharing the same VPC. **Never run builds or tests a
 The setup script (`scripts/cloud-build-setup.sh`) is configured to target `workstation-cluster / ws-config / dev-workstation` (lines 41-43). This is intentional — it keeps build/test cycles isolated from the live workstation.
 
 
-### Service Accounts
-
-| Account | Email | Role | Purpose |
-|---------|-------|------|---------|
-| **owner-sa** | `owner-sa@YOUR_PROJECT_ID.iam.gserviceaccount.com` | Owner | Full project admin — used by Platform Engineer for all GCP operations |
-
-### Credentials
-
-- **`owner-sa-key.json`** — Owner SA key. Used for all `gcloud` CLI interactions. **Never use `GOOGLE_APPLICATION_CREDENTIALS`** — always reference the key file directly (e.g., `--key-file=owner-sa-key.json` or load explicitly in code).
-- Protected by `.gitignore` pattern `*-sa-key.json`. **Never commit these.**
 
 ## Product Owner / CEO
 

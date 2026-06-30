@@ -27,4 +27,5 @@
 | F-0004 | Dynamic Boot Sync Repo Clone | docs/specs/F-0004-dynamic-boot-sync-clone.md | P1 | done | SWE-1 | feature/dynamic-boot-sync-clone | F-0002 | Dynamically clone repo if missing on boot and update tests to agy |
 | F-0005 | Remove Proprietary Font Reference | docs/specs/F-0005-remove-proprietary-fonts.md | P1 | done | SWE | feature/remove-proprietary-fonts | F-0001 | Remove Operator Mono and verify custom fonts |
 | F-0006 | Remove Tailscale | — | P1 | backlog | — | — | — | Remove Tailscale client, boot script (06a-tailscale.sh), all config references, and related tests |
+| F-0007 | Fix Boot Test Failures on Fresh Workstation | docs/specs/F-0007-fix-boot-test-failures.md | P0 | in-progress | SWE | feature/fix-boot-test-failures | F-0002 | Fixes race condition, font deployment, stale assertions, over-delete guards (GH #15, #16, #17, #18) |
 

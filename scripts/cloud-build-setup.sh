@@ -746,8 +746,18 @@ else
     test_fail "Boot scripts deployment (only $SCRIPT_COUNT files)"
 fi
 
-
-
+# Deploy custom developer fonts to ~/boot/fonts/ for 04-fonts.sh
+log "Deploying custom developer fonts..."
+if [ -d "${REPO_DIR}/dev-fonts" ]; then
+    tar czf /tmp/dev-fonts.tar.gz -C "${REPO_DIR}/dev-fonts" CascadiaCode CaskaydiaCove FiraCodeiScript 2>/dev/null
+    cat /tmp/dev-fonts.tar.gz | ws_pipe "mkdir -p ~/boot/fonts && cd ~/boot/fonts && tar xzf -"
+    rm -f /tmp/dev-fonts.tar.gz
+    # Rebuild font cache so fonts appear in fc-list immediately
+    ws_ssh "sudo runuser -u user -- fc-cache -f 2>/dev/null || true"
+    test_pass "Custom developer fonts deployed to ~/boot/fonts/"
+else
+    test_fail "dev-fonts/ directory not found in repo at ${REPO_DIR}/dev-fonts"
+fi
 
 # =========================================================================
 step "Step 13/19: Deploy configs"
@@ -833,7 +843,7 @@ echo "foot=$(test -f ~/.config/foot/foot.ini && echo yes || echo no)"
 echo "zsh_plugins=$(test -d ~/.zsh/zsh-syntax-highlighting && echo yes || echo no)"
 ')
 
-echo "$SETUP_VERIFY" | grep -q "fonts_custom=[1-9]" && test_pass "Custom developer fonts (FiraCodeiScript/CaskaydiaCove)" || test_warn "Custom developer fonts not in fc-list"
+echo "$SETUP_VERIFY" | grep -q "fonts_custom=[1-9]" && test_pass "Custom developer fonts (FiraCodeiScript/CaskaydiaCove)" || test_fail "Custom developer fonts not in fc-list (fonts should be deployed in Step 12)"
 echo "$SETUP_VERIFY" | grep -q "fonts_cascadia=[1-9]" && test_pass "Cascadia Code (Nix)" || test_warn "Cascadia Code not in fc-list (home-manager may need switch)"
 echo "$SETUP_VERIFY" | grep -q "zshrc=yes" && test_pass ".zshrc created" || test_warn ".zshrc not verified"
 echo "$SETUP_VERIFY" | grep -q "starship" && test_pass "Starship prompt" || test_warn "Starship not verified"

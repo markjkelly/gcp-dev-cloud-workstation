@@ -46,4 +46,4 @@ PM → TPM → SWEs → SWE-Test/QA → SWEs update backlog → TPM → PM
 - Always include a spec link in docs/BACKLOG.md entries
 - Use feature branches (`feature/<name>`) for all non-trivial work
 - Use `SendMessage` to coordinate with all agents
-- Use `git -c user.name="Your Name" -c user.email="your-email@example.com"` for all commits
+- Use `git -c user.name="Mark Kelly" -c user.email="markjkelly@google.com"` for all commits

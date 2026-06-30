@@ -30,6 +30,6 @@ User invokes `/status` to get a summary of the current milestone.
 ## Project Context
 
 - **Project:** Cloud Workstation
-- **Owner:** Your Name (your-email@example.com)
+- **Owner:** Mark Kelly (markjkelly@google.com)
 - **Backlog:** `docs/BACKLOG.md`
 - **Progress log:** `docs/PROGRESS.md`

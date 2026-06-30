@@ -35,4 +35,4 @@ User invokes `/test` with a target file, function, or module to test.
 ## Project Context
 
 - **Project:** Cloud Workstation
-- **Owner:** Your Name (your-email@example.com)
+- **Owner:** Mark Kelly (markjkelly@google.com)

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# hub-start — fire-and-forget launch of the Antigravity Hub on workspace 1.
+# hub-start — fire-and-forget launch of the Antigravity Hub on workspace 5.
 #
 # Unlike hub-restart (F-0122), this script does NOT kill existing processes,
 # remove stale locks, or wait for readiness. It launches the Hub and exits
@@ -23,6 +23,6 @@ printf '\n=== hub-start: %s ===\n' "$(date '+%Y-%m-%d %H:%M:%S')" >> "$LOG"
 env -u LD_LIBRARY_PATH setsid "$HUB" --no-sandbox --ozone-platform=wayland \
   --disable-gpu --disable-dev-shm-usage --user-data-dir="$UDD" >> "$LOG" 2>&1 &
 disown
-swaymsg workspace number 1 >/dev/null 2>&1
+swaymsg workspace number 5 >/dev/null 2>&1
 
-echo "Hub launched (workspace 1) — log: $LOG"
+echo "Hub launched (workspace 5) — log: $LOG"

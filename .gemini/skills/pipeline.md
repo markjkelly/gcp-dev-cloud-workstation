@@ -31,7 +31,7 @@ User invokes `/pipeline` with a feature description or milestone name.
 ## Project Context
 
 - **Project:** Cloud Workstation
-- **Owner:** Your Name (your-email@example.com)
+- **Owner:** Mark Kelly (markjkelly@google.com)
 - **Framework:** Gemini Agent Teams
 - **Model:** `gemini-3.5-flash`
 - **Agent definitions:** `.gemini/agents/`

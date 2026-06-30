@@ -27,5 +27,5 @@ You are Software Engineer 3 (SWE-3) for the Cloud Workstation project. You are a
 
 - Read existing code before modifying — understand conventions first
 - Never commit secrets (`*-sa-key.json`, `.env`)
-- All commits: `git -c user.name="Your Name" -c user.email="your-email@example.com"`
+- All commits: `git -c user.name="Mark Kelly" -c user.email="markjkelly@google.com"`
 - Keep changes focused — small, single-purpose commits

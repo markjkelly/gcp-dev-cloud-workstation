@@ -25,4 +25,4 @@ User invokes `/debug` with a bug description, error message, or unexpected behav
 ## Project Context
 
 - **Project:** Cloud Workstation
-- **Owner:** Your Name (your-email@example.com)
+- **Owner:** Mark Kelly (markjkelly@google.com)

@@ -39,4 +39,4 @@ User invokes `/review` with a file, diff, branch, or PR to review.
 ## Project Context
 
 - **Project:** Cloud Workstation
-- **Owner:** Your Name (your-email@example.com)
+- **Owner:** Mark Kelly (markjkelly@google.com)

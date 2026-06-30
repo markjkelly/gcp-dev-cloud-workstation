@@ -1,7 +1,7 @@
 # Project Backlog — Cloud Workstation
 
 **Maintained by:** TPM
-**Last updated:** 2026-06-29
+**Last updated:** 2026-06-30
 
 ---
 
@@ -25,6 +25,6 @@
 | F-0002 | Scratch E2E Integration Test | docs/specs/F-0002-scratch-e2e-test.md | P0 | done | PE | feature/scratch-e2e-test | F-0001 | Implemented python helper to avoid invalid gcloud add-iam-policy-binding commands |
 | F-0003 | Align Hub Launchers to Workspace 5 | docs/specs/F-0003-hub-restart-workspace-5.md | P1 | done | SWE-1 | feature/hub-restart-workspace-5 | F-0002 | Legacy Workspace 1 references forced focus to ws1 instead of ws5 when run |
 | F-0004 | Dynamic Boot Sync Repo Clone | docs/specs/F-0004-dynamic-boot-sync-clone.md | P1 | done | SWE-1 | feature/dynamic-boot-sync-clone | F-0002 | Dynamically clone repo if missing on boot and update tests to agy |
-| F-0005 | Remove Proprietary Font Reference | docs/specs/F-0005-remove-proprietary-fonts.md | P1 | in-progress | SWE | feature/remove-proprietary-fonts | F-0001 | Remove Operator Mono and verify custom fonts |
 | F-0005 | Remove Proprietary Font Reference | docs/specs/F-0005-remove-proprietary-fonts.md | P1 | done | SWE | feature/remove-proprietary-fonts | F-0001 | Remove Operator Mono and verify custom fonts |
+| F-0006 | Remove Tailscale | — | P1 | backlog | — | — | — | Remove Tailscale client, boot script (06a-tailscale.sh), all config references, and related tests |
 

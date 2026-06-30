@@ -18,7 +18,7 @@ if [ ! -d "$FONT_SRC" ]; then
 fi
 
 # Idempotent check: skip if key fonts already installed
-if runuser -u $USER -- bash -c ". /home/user/.nix-profile/etc/profile.d/nix.sh && fc-list 2>/dev/null" | grep -qi "operator mono"; then
+if [ -d "$FONT_DST" ] && [ "$(find "$FONT_DST" -type f | wc -l)" -gt 0 ]; then
     log "Fonts already installed — skipping"
     exit 0
 fi

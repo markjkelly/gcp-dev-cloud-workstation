@@ -1,5 +1,0 @@
-bindings:
-- members:
-  - serviceAccount:927217725157-compute@developer.gserviceaccount.com
-  - user:daily-account@markjkelly.altostrat.com
-  role: roles/workstations.user

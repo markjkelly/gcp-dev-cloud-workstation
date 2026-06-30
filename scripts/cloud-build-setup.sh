@@ -697,15 +697,6 @@ else
     test_fail "Boot scripts deployment (only $SCRIPT_COUNT files)"
 fi
 
-log "Deploying Operator Mono fonts (proprietary — not in Nix)..."
-tar czf /tmp/operator-mono.tar.gz -C "${REPO_DIR}/dev-fonts/Operator-Mono" .
-cat /tmp/operator-mono.tar.gz | ws_pipe "mkdir -p ~/boot/fonts && tar xzf - -C ~/boot/fonts"
-OP_COUNT=$(ws_ssh "find ~/boot/fonts -name '*.otf' | wc -l")
-if [ "${OP_COUNT:-0}" -ge 1 ]; then
-    test_pass "Operator Mono fonts deployed ($OP_COUNT files)"
-else
-    test_fail "Operator Mono font deployment (0 OTF files found in ~/boot/fonts)"
-fi
 
 # =========================================================================
 step "Step 13/19: Deploy configs"
@@ -783,7 +774,7 @@ fi
 # Verify setup results
 SETUP_VERIFY=$(ws_ssh '
 '"${NIX_SOURCE}"'
-echo "fonts_operator=$(fc-list 2>/dev/null | grep -ci "operator mono")"
+echo "fonts_custom=$(fc-list 2>/dev/null | grep -Ei "firacodeiscript|caskaydia" | wc -l)"
 echo "fonts_cascadia=$(fc-list 2>/dev/null | grep -ci "cascadia")"
 echo "zshrc=$(test -f ~/.zshrc && echo yes || echo no)"
 echo "starship=$(~/.local/bin/starship --version 2>/dev/null | head -1)"
@@ -791,7 +782,7 @@ echo "foot=$(test -f ~/.config/foot/foot.ini && echo yes || echo no)"
 echo "zsh_plugins=$(test -d ~/.zsh/zsh-syntax-highlighting && echo yes || echo no)"
 ')
 
-echo "$SETUP_VERIFY" | grep -q "fonts_operator=[1-9]" && test_pass "Operator Mono fonts (OTF)" || test_warn "Operator Mono not in fc-list (may need fc-cache)"
+echo "$SETUP_VERIFY" | grep -q "fonts_custom=[1-9]" && test_pass "Custom developer fonts (FiraCodeiScript/CaskaydiaCove)" || test_warn "Custom developer fonts not in fc-list"
 echo "$SETUP_VERIFY" | grep -q "fonts_cascadia=[1-9]" && test_pass "Cascadia Code (Nix)" || test_warn "Cascadia Code not in fc-list (home-manager may need switch)"
 echo "$SETUP_VERIFY" | grep -q "zshrc=yes" && test_pass ".zshrc created" || test_warn ".zshrc not verified"
 echo "$SETUP_VERIFY" | grep -q "starship" && test_pass "Starship prompt" || test_warn "Starship not verified"
@@ -1045,7 +1036,7 @@ echo " Cloud Scheduler auto-stops daily at 8PM Central (start manually when need
 echo " Connect via browser at the URL above (noVNC desktop)."
 echo ""
 echo " Installed: Sway (Tokyo Night), Nix, ZSH, Starship,"
-echo "   Operator Mono font, Chrome, VS Code, Antigravity,"
+echo "   Custom developer fonts, Chrome, VS Code, Antigravity,"
 echo "   Go, Rust (rustup), Python (pyenv), Ruby (rbenv), Node.js (Nix),"
 echo "   Wofi app launcher, snippet picker, clipboard manager"
 echo "============================================="

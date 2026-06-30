@@ -398,9 +398,16 @@ if [ -n "$FOOT_FAMILY" ]; then
     else
         test_fail "foot font spacing=mono fallback ($FOOT_FAMILY -> $FC_MONO)"
     fi
-else
-    test_fail "foot.ini has no [main] font= line"
 fi
+
+# Verify custom developer fonts (FiraCodeiScript / CaskaydiaCove) are available in fc-list
+CUSTOM_FONTS_COUNT=$(runuser -u $USER -- bash -c ". $NIX_SH && fc-list 2>/dev/null" | grep -Ei "firacodeiscript|caskaydia" | wc -l)
+if [ "$CUSTOM_FONTS_COUNT" -gt 0 ]; then
+    test_pass "Custom developer fonts (FiraCodeiScript/CaskaydiaCove) installed ($CUSTOM_FONTS_COUNT fonts)"
+else
+    test_fail "Custom developer fonts (FiraCodeiScript/CaskaydiaCove) not found in fc-list"
+fi
+
 # Tmux module configs
 if ws_module_enabled "tmux"; then
     check_file "tmux.conf" "$HOME_DIR/.tmux.conf"

@@ -265,7 +265,7 @@ if [ "$COMMAND" = "setup" ]; then
     cat > "${TMPDIR}/cloudbuild.yaml" << 'BUILDEOF'
 steps:
   - name: 'gcr.io/cloud-builders/git'
-    args: ['clone', '${_REPO_URL}', '/workspace/repo']
+    args: ['clone', '--branch', '${_BRANCH_NAME}', '${_REPO_URL}', '/workspace/repo']
     id: 'clone-repo'
 
   - name: 'gcr.io/cloud-builders/gcloud'
@@ -281,6 +281,7 @@ steps:
 timeout: 7200s
 substitutions:
   _REPO_URL: 'https://github.com/markjkelly/cloud-workstation.git'
+  _BRANCH_NAME: 'main'
   _REGION: 'us-central1'
   _WEBHOOK_URL: ''
   _EMAIL_FUNC_URL: ''
@@ -292,10 +293,13 @@ options:
   machineType: 'E2_HIGHCPU_8'
 BUILDEOF
 
+    # Get current branch name to build from the correct git ref
+    BRANCH_NAME=$(git -C "$SCRIPT_DIR_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main")
+
     # Build the substitutions array — use gcloud's --substitutions flag carefully.
     # Webhook URLs contain & and = which are safe in Cloud Build substitution values
     # but must be properly quoted when passed via shell.
-    SUBS_ARGS=("_REPO_URL=${REPO_URL}" "_REGION=${REGION}" "_USER_ACCOUNT=${ACCOUNT}" "_PROFILE=${PROFILE}")
+    SUBS_ARGS=("_REPO_URL=${REPO_URL}" "_BRANCH_NAME=${BRANCH_NAME}" "_REGION=${REGION}" "_USER_ACCOUNT=${ACCOUNT}" "_PROFILE=${PROFILE}")
     [ -n "$WEBHOOK_URL" ] && SUBS_ARGS+=("_WEBHOOK_URL=${WEBHOOK_URL}")
     [ -n "$EMAIL_FUNCTION_URL" ] && SUBS_ARGS+=("_EMAIL_FUNC_URL=${EMAIL_FUNCTION_URL}" "_EMAIL=${EMAIL}")
 

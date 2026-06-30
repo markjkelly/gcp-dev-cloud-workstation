@@ -828,7 +828,7 @@ log "--- Upgrade Scripts ---"
 if ws_module_enabled "ai-tools"; then
     # Check 07-apps.sh ran and completed
     if [ -f "$HOME_DIR/logs/app-update.log" ]; then
-        if grep -q "App update complete" "$HOME_DIR/logs/app-update.log" 2>/dev/null; then
+        if grep -qa "App update complete" "$HOME_DIR/logs/app-update.log" 2>/dev/null; then
             test_pass "07-apps.sh completed successfully"
         else
             test_fail "07-apps.sh did not complete (check ~/logs/app-update.log)"
@@ -1152,7 +1152,7 @@ if [ "$SVC_SUBSTATE" = "exited" ] && [ "$SVC_ACTIVE" = "active" ]; then
     # Service has completed — it is now safe to read the final outcome from the log
     if [ -f "$APP_UPDATE_LOG" ]; then
         # Check the last completion-marker line (started / complete / SKIPPED)
-        LAST_APP_LINE=$(grep '=== App update' "$APP_UPDATE_LOG" 2>/dev/null | tail -1)
+        LAST_APP_LINE=$(grep -a '=== App update' "$APP_UPDATE_LOG" 2>/dev/null | tail -1)
         if echo "$LAST_APP_LINE" | grep -q 'SKIPPED'; then
             test_fail "F-0123: ws-app-updates.service completed but last outcome is SKIPPED — D-Bus probe still failing (check $APP_UPDATE_LOG)"
         elif echo "$LAST_APP_LINE" | grep -q 'complete'; then

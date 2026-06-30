@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# hub-restart — cleanly (re)launch the Antigravity Hub on workspace 1.
+# hub-restart — cleanly (re)launch the Antigravity Hub on workspace 5.
 #
 # Why this exists: at cold boot the Hub's bundled language_server sometimes
-# never starts, leaving workspace 1 blank. Launching the Hub from your own
+# never starts, leaving workspace 5 blank. Launching the Hub from your own
 # session (with the Wayland/D-Bus env) always works. Just run:  hub-restart
 set -u
 
@@ -29,7 +29,7 @@ printf '\n%s\n' "$MARKER" >> "$LOG"
 setsid "$HUB" --no-sandbox --ozone-platform=wayland --disable-gpu \
   --disable-dev-shm-usage --user-data-dir="$UDD" >> "$LOG" 2>&1 &
 disown
-swaymsg workspace number 1 >/dev/null 2>&1
+swaymsg workspace number 5 >/dev/null 2>&1
 
 printf "Waiting for Hub"
 for _ in $(seq 1 20); do
@@ -37,7 +37,7 @@ for _ in $(seq 1 20); do
   if awk -v m="$MARKER" 'index($0,m){s=1} s&&/Port changed/{ok=1} END{exit !ok}' "$LOG"; then
     url=$(grep 'Port changed' "$LOG" | tail -1 | grep -o '127.0.0.1:[0-9]*')
     win=$(swaymsg -t get_tree 2>/dev/null | grep -c '"app_id": "antigravity"')
-    printf ' — UP \xe2\x9c\x93  (language_server on %s, windows=%s, workspace 1)\n' "$url" "$win"
+    printf ' — UP \xe2\x9c\x93  (language_server on %s, windows=%s, workspace 5)\n' "$url" "$win"
     exit 0
   fi
   printf "."; sleep 1

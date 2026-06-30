@@ -357,6 +357,12 @@ else
     test_fail "F-0122: hub-restart missing at ~/.local/bin/hub-restart"
 fi
 check_binary "hub-restart (on PATH)" "hub-restart"
+# F-0003: hub-restart workspace 5 alignment
+if [ -f "$HUB_RESTART_BIN" ]; then
+    check_grep "hub-restart switches to workspace 5 (F-0003)" "swaymsg workspace number 5" "$HUB_RESTART_BIN"
+    check_grep "hub-restart success output mentions workspace 5 (F-0003)" "workspace 5" "$HUB_RESTART_BIN"
+fi
+
 # F-0135: hub-start utility
 HUB_START_BIN="$HOME_DIR/.local/bin/hub-start"
 if [ -f "$HUB_START_BIN" ]; then
@@ -370,6 +376,11 @@ else
     test_fail "F-0135: hub-start missing at ~/.local/bin/hub-start"
 fi
 check_binary "hub-start (on PATH)" "hub-start"
+# F-0003: hub-start workspace 5 alignment
+if [ -f "$HUB_START_BIN" ]; then
+    check_grep "hub-start switches to workspace 5 (F-0003)" "swaymsg workspace number 5" "$HUB_START_BIN"
+    check_grep "hub-start success output mentions workspace 5 (F-0003)" "workspace 5" "$HUB_START_BIN"
+fi
 check_file "Sway config" "$HOME_DIR/.config/sway/config"
 check_file "foot.ini" "$HOME_DIR/.config/foot/foot.ini"
 check_grep "foot font (monospace)" "DejaVu Sans Mono" "$HOME_DIR/.config/foot/foot.ini"

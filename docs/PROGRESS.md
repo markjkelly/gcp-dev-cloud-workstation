@@ -122,6 +122,38 @@ Milestone 1: Initial Setup
 ### Decisions
 - Replaced the target resource from `config` to `workstation` in `add_ws_iam_binding` because `roles/workstations.user` is only supported on the Workstation instance itself, not the config.
 
-### Next Steps
 - Verify the completed workstation cluster is functional.
   - *Note*: The build passed Step 8 (IAM bindings) successfully, but later failed at Step 11 (Persist Nix store) due to an SSH timeout during the `/nix` directory copy. This is a separate issue to be investigated later.
+
+## Session 5 — 2026-06-30 (F-0003: Align Hub Launchers to Workspace 5)
+
+### Date
+2026-06-30
+
+### Milestone
+Milestone 1: Initial Setup
+
+### Completed
+- **F-0003** (Align Hub Launchers to Workspace 5):
+  - Modified `workstation-image/scripts/hub-restart` to switch Sway focus to Workspace 5 (`swaymsg workspace number 5`) and output `workspace 5`.
+  - Modified `workstation-image/scripts/hub-start` to switch Sway focus to Workspace 5 (`swaymsg workspace number 5`) and output `workspace 5`.
+  - Deployed modified scripts to `~/.local/bin/` locally on the workstation and manually verified they start the Hub, switch focus, and output correct workspace text.
+  - Added new integration assertions in `workstation-image/boot/10-tests.sh` to check for Workspace 5 alignment in both script files.
+  - Verified integration tests pass successfully on the active workstation.
+  - Created spec `docs/specs/F-0003-hub-restart-workspace-5.md` and updated `docs/BACKLOG.md` status to completed.
+
+### Files Changed
+- `workstation-image/scripts/hub-restart`
+- `workstation-image/scripts/hub-start`
+- `workstation-image/boot/10-tests.sh`
+- `docs/specs/F-0003-hub-restart-workspace-5.md`
+- `docs/BACKLOG.md`
+- `docs/PROGRESS.md`
+- `docs/RELEASENOTES.md`
+
+### Decisions
+- Aligned launcher scripts focus transition to Workspace 5 (`ws5`) to match the Sway configuration placement rules for `antigravity` window.
+
+### Next Steps
+- Open PR for `feature/hub-restart-workspace-5`.
+- Merge and tag release `v1.1.4`.

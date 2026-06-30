@@ -1,0 +1,11 @@
+{
+  "etag": "ACAB",
+  "bindings": [
+    {
+      "role": "roles/workstations.user",
+      "members": [
+        "serviceAccount:927217725157-compute@developer.gserviceaccount.com"
+      ]
+    }
+  ]
+}

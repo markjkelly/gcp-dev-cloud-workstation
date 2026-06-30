@@ -30,6 +30,10 @@ runuser -u $USER -- mkdir -p "$FONT_DST"
 find "$FONT_SRC" -type f \( -name '*.otf' -o -name '*.ttf' \) -exec cp --update=none {} "$FONT_DST/" \;
 chown -R $USER:$USER "$FONT_DST"
 
-# Rebuild font cache
+# Rebuild font cache as user (fallback that works even without Nix in PATH)
+runuser -u user -- fc-cache -f 2>/dev/null || true
+log "Font cache rebuilt"
+
+# Rebuild font cache with Nix fontconfig for full integration
 runuser -u $USER -- bash -c ". /home/user/.nix-profile/etc/profile.d/nix.sh && fc-cache -fv" 2>&1 | tail -5
 log "Font installation complete"

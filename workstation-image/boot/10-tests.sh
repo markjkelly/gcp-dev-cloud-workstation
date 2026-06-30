@@ -130,34 +130,38 @@ if [ ! -f "/usr/bin/antigravity" ]; then
 else
     test_fail "Antigravity IDE still present at /usr/bin/antigravity (should be removed — F-0116)"
 fi
-check_dir "Antigravity CLI config" "$HOME_DIR/.gemini/agy"
+# Antigravity CLI config — check actual config directory (path may vary)
+if [ -d "$HOME_DIR/.gemini/agy" ]; then
+    test_pass "Antigravity CLI config ($HOME_DIR/.gemini/agy)"
+elif [ -d "$HOME_DIR/.gemini/antigravity-cli" ]; then
+    test_pass "Antigravity CLI config ($HOME_DIR/.gemini/antigravity-cli)"
+elif runuser -u $USER -- bash -c ". $NIX_SH && export PATH=$HOME_DIR/.nix-profile/bin:$HOME_DIR/.npm-global/bin:$HOME_DIR/.local/bin:$HOME_DIR/gopath/bin:$HOME_DIR/go/bin:$HOME_DIR/.cargo/bin:$HOME_DIR/.pyenv/bin:$HOME_DIR/.rbenv/bin:/var/lib/nvidia/bin:\$PATH && which agy" >/dev/null 2>&1; then
+    test_warn "Antigravity CLI binary found but config dir missing (neither ~/.gemini/agy nor ~/.gemini/antigravity-cli)"
+else
+    test_skip "Antigravity CLI config check skipped — agy not installed"
+fi
 check_dir "Antigravity Hub directory" "$HOME_DIR/.local/share/antigravity-hub"
 check_file "Antigravity Hub symlink" "$HOME_DIR/.local/bin/antigravity-hub"
 # F-0125: Orphaned IDE dirs must be absent (cleaned by 07-apps.sh on every boot).
-# Also assert Hub and CLI dirs are still present (over-deletion guard).
-if [ ! -e "$HOME_DIR/.config/Antigravity" ] || [ ! -f "/usr/bin/antigravity" ]; then
-    test_pass "IDE userData dir absent or not owned by IDE (~/.config/Antigravity — F-0125)"
+# NOTE: F-0136 intentionally removed the cleanup code — these legacy dir checks
+# are no longer meaningful. Only the over-deletion guards below remain.
+
+# Over-deletion guard: Hub userData must still be present IF Hub is installed
+if [ -d "$HOME_DIR/.local/share/antigravity-hub/" ]; then
+    check_dir "Hub userData preserved after F-0125 cleanup (anti-over-delete)" "$HOME_DIR/.config/Antigravity-Hub"
 else
-    test_fail "IDE userData dir still present at ~/.config/Antigravity and IDE binary exists (F-0125)"
+    test_skip "Hub userData check skipped — Hub not installed at $HOME_DIR/.local/share/antigravity-hub/"
 fi
-if ls "$HOME_DIR"/.config/Antigravity.bak.* >/dev/null 2>&1; then
-    test_fail "IDE userData backup(s) still present at ~/.config/Antigravity.bak.* (07-apps.sh cleanup did not run — F-0125)"
+# Over-deletion guard: Antigravity CLI dir must still be present IF agy is installed
+if runuser -u $USER -- bash -c ". $NIX_SH && export PATH=$HOME_DIR/.nix-profile/bin:$HOME_DIR/.npm-global/bin:$HOME_DIR/.local/bin:$HOME_DIR/gopath/bin:$HOME_DIR/go/bin:$HOME_DIR/.cargo/bin:$HOME_DIR/.pyenv/bin:$HOME_DIR/.rbenv/bin:/var/lib/nvidia/bin:\$PATH && which agy" >/dev/null 2>&1; then
+    if [ -d "$HOME_DIR/.gemini/agy" ] || [ -d "$HOME_DIR/.gemini/antigravity-cli" ]; then
+        test_pass "Antigravity CLI preserved after F-0125 cleanup (anti-over-delete)"
+    else
+        test_fail "Antigravity CLI dir missing after F-0125 cleanup (neither ~/.gemini/agy nor ~/.gemini/antigravity-cli — possible over-deletion)"
+    fi
 else
-    test_pass "IDE userData backups absent (~/.config/Antigravity.bak.* cleaned — F-0125)"
+    test_skip "Antigravity CLI check skipped — agy binary not on PATH (not installed yet)"
 fi
-if [ ! -e "$HOME_DIR/.antigravity" ]; then
-    test_pass "IDE extensions dir absent (~/.antigravity cleaned — F-0125)"
-else
-    test_fail "IDE extensions dir still present at ~/.antigravity (07-apps.sh cleanup did not run — F-0125)"
-fi
-if [ ! -e "$HOME_DIR/.cache/antigravity" ]; then
-    test_pass "IDE cache dir absent (~/.cache/antigravity cleaned — F-0125)"
-else
-    test_fail "IDE cache dir still present at ~/.cache/antigravity (07-apps.sh cleanup did not run — F-0125)"
-fi
-# Over-deletion guard: Hub userData and CLI dirs MUST still be present
-check_dir "Hub userData preserved after F-0125 cleanup (anti-over-delete)" "$HOME_DIR/.config/Antigravity-Hub"
-check_dir "Antigravity CLI preserved after F-0125 cleanup (anti-over-delete)" "$HOME_DIR/.gemini/agy"
 # F-0116: IDE ws2 launch removed — assert the IDE launch block is absent
 if grep -qE 'launch_and_wait[[:space:]]+2[[:space:]].*ANTIGRAVITY' "$HOME_DIR/boot/08-workspaces.sh"; then
     test_fail "08-workspaces.sh still launches IDE on ws2 via ANTIGRAVITY variable (F-0116 regression)"
@@ -824,7 +828,7 @@ log "--- Upgrade Scripts ---"
 if ws_module_enabled "ai-tools"; then
     # Check 07-apps.sh ran and completed
     if [ -f "$HOME_DIR/logs/app-update.log" ]; then
-        if grep -q "App update complete" "$HOME_DIR/logs/app-update.log" 2>/dev/null; then
+        if grep -qa "App update complete" "$HOME_DIR/logs/app-update.log" 2>/dev/null; then
             test_pass "07-apps.sh completed successfully"
         else
             test_fail "07-apps.sh did not complete (check ~/logs/app-update.log)"
@@ -1148,7 +1152,7 @@ if [ "$SVC_SUBSTATE" = "exited" ] && [ "$SVC_ACTIVE" = "active" ]; then
     # Service has completed — it is now safe to read the final outcome from the log
     if [ -f "$APP_UPDATE_LOG" ]; then
         # Check the last completion-marker line (started / complete / SKIPPED)
-        LAST_APP_LINE=$(grep '=== App update' "$APP_UPDATE_LOG" 2>/dev/null | tail -1)
+        LAST_APP_LINE=$(grep -a '=== App update' "$APP_UPDATE_LOG" 2>/dev/null | tail -1)
         if echo "$LAST_APP_LINE" | grep -q 'SKIPPED'; then
             test_fail "F-0123: ws-app-updates.service completed but last outcome is SKIPPED — D-Bus probe still failing (check $APP_UPDATE_LOG)"
         elif echo "$LAST_APP_LINE" | grep -q 'complete'; then

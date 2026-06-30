@@ -144,7 +144,7 @@ log "F-0123: Created ws-app-updates.service (runs 07-apps.sh after user@1000.ser
 cat > /etc/systemd/system/ws-boot-tests.service << 'EOF'
 [Unit]
 Description=Run boot verification tests after all services are up
-After=ws-autolaunch.service
+After=ws-autolaunch.service ws-app-updates.service
 Requires=sway-desktop.service
 
 [Service]

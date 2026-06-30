@@ -1,5 +1,18 @@
 # Release Notes — Cloud Workstation
 
+## v1.2.1 — Update Antigravity IDE to v2.1.1 (2026-06-30)
+
+### Changed
+- **Antigravity IDE v2.1.1** — Updated IDE download URL from v2.0.4 to v2.1.1 (`2.1.1-6123990880747520`).
+- **Version-Aware Upgrade Logic** — Replaced simple directory-exists check with intelligent version comparison. On each boot, `07-apps.sh` reads `ideVersion` from `product.json` and compares against the expected version. Fresh install if missing, backup + re-download if version mismatch, skip if current.
+- **Automatic Backup & Cleanup** — Old IDE installations are backed up as `.bak.<epoch>` before upgrade. Backups older than 7 days are automatically cleaned up.
+
+### Fixed
+- **Version Field Correction** — Uses `ideVersion` field from `product.json` (not `version`, which tracks the upstream VS Code engine version) for accurate IDE version detection.
+
+### Added
+- **Boot Test: IDE Version Check** — New F-0009 test in `10-tests.sh` verifies the installed IDE version matches the expected version on every boot.
+
 ## v1.2.0 — Fix Boot Test Failures on Fresh Workstation (2026-06-30)
 
 ### Fixed

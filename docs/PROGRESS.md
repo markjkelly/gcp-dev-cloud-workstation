@@ -241,3 +241,44 @@ Milestone 1: Initial Setup
 ### Next Steps
 - PO merges PR #19 and tags release.
 - Re-run full cloud-build-setup.sh to verify 0 FAIL on fresh build.
+
+## Session 9 — 2026-06-30 (F-0009: Update Antigravity IDE to v2.1.1)
+
+### Date
+2026-06-30
+
+### Milestone
+Milestone 1: Initial Setup
+
+### Completed
+- **F-0009** (Update Antigravity IDE to v2.1.1):
+  - Updated `IDE_URL` in `07-apps.sh` from v2.0.4 to v2.1.1 release tarball.
+  - Added `IDE_EXPECTED_VERSION="2.1.1"` constant.
+  - Replaced simple directory-exists check with version-aware three-way logic:
+    1. Fresh install if directory missing.
+    2. Version comparison via `product.json` `ideVersion` field if directory exists.
+    3. Skip if versions match, backup old install + re-download if mismatch.
+  - Old installations backed up as `.bak.<epoch>` before upgrade. Backups older than 7 days cleaned up.
+  - Added F-0009 version check test in `10-tests.sh`.
+  - **Bug found during QA**: The `product.json` `version` field tracks the upstream VS Code engine version (1.107.0), not the IDE release version. The correct field is `ideVersion`. Fixed in both `07-apps.sh` and `10-tests.sh`.
+  - QA verified on `dev-workstation`:
+    - Upgrade from v2.0.4 (ideVersion) detected correctly, old install backed up, new v2.1.1 downloaded and extracted.
+    - Skip path verified: re-running 07-apps.sh correctly reports "already at version 2.1.1".
+    - Boot tests: **193 PASS, 0 FAIL, 0 WARN, 0 SKIP**.
+    - F-0009 version test: `PASS: F-0009: Antigravity IDE version 2.1.1 matches expected 2.1.1`.
+
+### Files Changed
+- `workstation-image/boot/07-apps.sh`
+- `workstation-image/boot/10-tests.sh`
+- `docs/specs/F-0009-update-antigravity-ide.md`
+- `docs/BACKLOG.md`
+- `docs/PROGRESS.md`
+- `docs/RELEASENOTES.md`
+
+### Decisions
+- Used `ideVersion` field from `product.json` instead of `version` — the latter is the upstream VS Code engine version, not the IDE release version.
+- Backup naming uses epoch timestamp (`.bak.<epoch>`) for uniqueness and sortability.
+- Cleanup threshold set to 7 days via `find -mtime +7` to balance disk space and rollback safety.
+
+### Next Steps
+- PO merges PR and tags release v1.2.1.

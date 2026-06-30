@@ -88,6 +88,19 @@ Build a Cloud Workstation in GCP. The Cloud Workstation machine should have 32GB
 - **Organization:** `your-org.example.com`
 - **Region:** `us-central1` (primary)
 
+### Workstation Resources
+
+The project has two clusters sharing the same VPC. **Never run builds or tests against the live workstation.**
+
+| Cluster | Config | Workstation | Purpose |
+|---------|--------|-------------|---------|
+| `main-cluster` | `sway-config` | `sway-workstation` | **LIVE — do NOT target with builds/tests.** This is the PO's active development workstation. |
+| `main-cluster` | `dev-config` | `my-workstation` | Legacy (stopped). |
+| `workstation-cluster` | `ws-config` | `dev-workstation` | **TEST target.** All `ws.sh setup` builds and E2E tests run against this workstation. |
+
+The setup script (`scripts/cloud-build-setup.sh`) is configured to target `workstation-cluster / ws-config / dev-workstation` (lines 41-43). This is intentional — it keeps build/test cycles isolated from the live workstation.
+
+
 ### Service Accounts
 
 | Account | Email | Role | Purpose |

@@ -33,6 +33,14 @@
 ### Changed
 - **Repository Rename** — Re-targeted boot sync script and integration tests from `cloud-workstation` to `gcp-dev-cloud-workstation`.
 - **Antigravity CLI Verification** — Updated integration tests to assert correct name and paths for `agy` CLI binary instead of outdated `antigravity-cli`.
+## v1.1.6 — Remove Proprietary Fonts (2026-06-30)
+
+### Changed
+- **Fonts Verification** — Replaced proprietary Operator Mono font checks with verification for deployed open-source custom developer fonts (FiraCodeiScript and CaskaydiaCove).
+- **Fonts Setup Boot Script** — Updated boot/04-fonts.sh to use generic directory/file existence checking.
+
+### Removed
+- **Operator Mono** — Removed proprietary font deployment block and comments.
 
 ## v1.1.0 — Tooling Cleanups & Deployment Simplification (2026-06-29)
 

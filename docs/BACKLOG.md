@@ -22,3 +22,5 @@
 | ID | Feature | Spec | Priority | Status | Owner | Branch | Dependencies | Feedback |
 |----|---------|------|----------|--------|-------|--------|--------------|----------|
 | F-0001 | Port agent context, skills, and docs | — | P0 | done | SWE-1 | main | — | Initial port from private cloud-workstation repository |
+| F-0005 | Remove Proprietary Font Reference | docs/specs/F-0005-remove-proprietary-fonts.md | P1 | in-progress | SWE | feature/remove-proprietary-fonts | F-0001 | Remove Operator Mono and verify custom fonts |
+

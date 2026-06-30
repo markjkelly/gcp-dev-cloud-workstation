@@ -1,5 +1,11 @@
 # Release Notes — Cloud Workstation
 
+## v1.1.4 — Align Hub Launchers to Workspace 5 (2026-06-30)
+
+### Changed
+- **Hub Launchers Alignment** — Updated `hub-restart` and `hub-start` utility scripts to switch Sway focus to Workspace 5 (`ws5`) instead of Workspace 1 (`ws1`) upon launch, matching the Sway window placement rule.
+- **Integration Test Coverage** — Added assertions in `10-tests.sh` to verify both `hub-restart` and `hub-start` contain Workspace 5 references.
+
 ## v1.1.3 — IAM Binding Target Resource Fix (2026-06-29)
 
 ### Fixed

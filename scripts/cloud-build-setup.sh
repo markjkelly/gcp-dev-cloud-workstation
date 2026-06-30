@@ -747,13 +747,17 @@ else
 fi
 
 log "Deploying Operator Mono fonts (proprietary — not in Nix)..."
-tar czf /tmp/operator-mono.tar.gz -C "${REPO_DIR}/dev-fonts/Operator-Mono" .
-cat /tmp/operator-mono.tar.gz | ws_pipe "mkdir -p ~/boot/fonts && tar xzf - -C ~/boot/fonts"
-OP_COUNT=$(ws_ssh "find ~/boot/fonts -name '*.otf' | wc -l")
-if [ "${OP_COUNT:-0}" -ge 1 ]; then
-    test_pass "Operator Mono fonts deployed ($OP_COUNT files)"
+if [ -d "${REPO_DIR}/dev-fonts/Operator-Mono" ]; then
+    tar czf /tmp/operator-mono.tar.gz -C "${REPO_DIR}/dev-fonts/Operator-Mono" .
+    cat /tmp/operator-mono.tar.gz | ws_pipe "mkdir -p ~/boot/fonts && tar xzf - -C ~/boot/fonts"
+    OP_COUNT=$(ws_ssh "find ~/boot/fonts -name '*.otf' | wc -l")
+    if [ "${OP_COUNT:-0}" -ge 1 ]; then
+        test_pass "Operator Mono fonts deployed ($OP_COUNT files)"
+    else
+        test_fail "Operator Mono font deployment (0 OTF files found in ~/boot/fonts)"
+    fi
 else
-    test_fail "Operator Mono font deployment (0 OTF files found in ~/boot/fonts)"
+    test_warn "dev-fonts/Operator-Mono directory not found. Skipping Operator Mono font deploy."
 fi
 
 # =========================================================================

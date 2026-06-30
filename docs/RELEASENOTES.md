@@ -1,5 +1,22 @@
 # Release Notes — Cloud Workstation
 
+## v1.3.0 — Align Terraform and Setup Script for Full E2E Coverage (2026-06-30)
+
+### Changed
+- **Terraform Variable Defaults** — Updated `cluster_id` from `main-cluster` → `workstation-cluster`, `workstation_config_id` from `sway-config` → `ws-config`, `workstation_id` from `sway-workstation` → `dev-workstation`. Both Terraform and `cloud-build-setup.sh` now target the same test workstation by default.
+- **Generic Resource Names** — Renamed all `sway_*` Terraform resource identifiers to generic names (`workstation`, `main`, `workstation_sa_ar_reader`, `scheduler_user`, `stop_workstation`). The "sway" prefix was an implementation detail that shouldn't appear in infrastructure resource names.
+- **Service Account** — Renamed from `sway-workstation-sa` / `Sway Workstation VM Service Account` to `workstation-sa` / `Workstation VM Service Account`.
+- **Scheduler Job** — Renamed from `stop-sway-workstation-8pm-central` to `stop-workstation-8pm-central`.
+- **Output Renamed** — `sway_service_account_email` → `workstation_service_account_email`.
+- **README Setup Paths** — Added Setup Paths section documenting Path A (`ws.sh setup`, fully automated) and Path B (Terraform + Cloud Build).
+
+### Added
+- **API Enablement** — Added `google_project_service` resources for `workstations.googleapis.com`, `artifactregistry.googleapis.com`, `compute.googleapis.com`, and `cloudscheduler.googleapis.com` with `depends_on` chains. Terraform can now bootstrap from a completely fresh project.
+- **Snapshot Policy in Setup Script** — Added Step 18b to `cloud-build-setup.sh` creating a `workstation-home-daily-snapshots` disk snapshot schedule policy (daily at 04:00, 7-day retention) and attaching it to workstation disks. Both operations are idempotent.
+
+### Migration Note
+- Existing Terraform users with state referencing the old resource names must run `terraform state mv` to map old names to new ones before applying. For example: `terraform state mv google_service_account.sway_workstation google_service_account.workstation`.
+
 ## v1.2.1 — Update Antigravity IDE to v2.1.1 (2026-06-30)
 
 ### Changed

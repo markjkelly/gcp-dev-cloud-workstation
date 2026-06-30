@@ -6,7 +6,7 @@ set -e
 # Updates take effect on the next reboot.
 # Exits gracefully if repo is missing or git pull fails (non-fatal)
 
-REPO_DIR="/home/user/dev/git/cloud-workstation"
+REPO_DIR="/home/user/dev/git/gcp-dev-cloud-workstation"
 USER_HOME="/home/user"
 LOG_DIR="${USER_HOME}/logs"
 LOG_FILE="${LOG_DIR}/sync.log"
@@ -21,11 +21,43 @@ mkdir -p "${LOG_DIR}"
 {
   echo "=== Boot sync started at $(date) ==="
 
-  # Check if repo directory exists
+  # Check if repo directory exists, if not attempt to clone it
   if [[ ! -d "${REPO_DIR}" ]]; then
-    echo "WARNING: Repo directory not found at ${REPO_DIR}. Skipping sync."
-    echo "=== Boot sync completed (repo missing) at $(date) ==="
-    exit 0
+    echo "Repo directory not found at ${REPO_DIR}. Attempting clone..."
+    mkdir -p "$(dirname "${REPO_DIR}")"
+    CLONE_SUCCESS=false
+
+    # Check if SSH keys exist
+    if [[ -f "${USER_HOME}/.ssh/id_rsa" || -f "${USER_HOME}/.ssh/id_ed25519" || -f "${USER_HOME}/.ssh/id_ecdsa" || -f "${USER_HOME}/.ssh/id_dsa" ]]; then
+      echo "SSH key found, attempting SSH clone..."
+      if HOME="${USER_HOME}" GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=${USER_HOME}/.ssh/known_hosts" git clone git@github.com:markjkelly/gcp-dev-cloud-workstation.git "${REPO_DIR}" 2>&1; then
+        echo "✓ SSH clone succeeded"
+        CLONE_SUCCESS=true
+      else
+        echo "⚠ SSH clone failed. Falling back to HTTPS..."
+      fi
+    else
+      echo "No SSH keys found. Skipping SSH clone attempt."
+    fi
+
+    if [[ "${CLONE_SUCCESS}" = false ]]; then
+      echo "Attempting HTTPS clone..."
+      if HOME="${USER_HOME}" git clone https://github.com/markjkelly/gcp-dev-cloud-workstation.git "${REPO_DIR}" 2>&1; then
+        echo "✓ HTTPS clone succeeded"
+        CLONE_SUCCESS=true
+      else
+        echo "✗ HTTPS clone failed"
+      fi
+    fi
+
+    if [[ "${CLONE_SUCCESS}" = true ]]; then
+      echo "Fixing cloned repo ownership..."
+      chown -R 1000:1000 "${REPO_DIR}"
+    else
+      echo "ERROR: Failed to clone repository. Skipping sync."
+      echo "=== Boot sync completed (clone failed) at $(date) ==="
+      exit 0
+    fi
   fi
 
   # Git pull with error tolerance — run as root with HOME set so git uses user config

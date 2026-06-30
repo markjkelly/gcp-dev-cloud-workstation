@@ -346,7 +346,8 @@ else
     log "Creating cluster (5-10 minutes)..."
     retry 2 30 gcloud workstations clusters create "$CLUSTER" \
         --region="$REGION" --project="$PROJECT_ID" \
-        --network="$VPC_NAME" --subnetwork="$SUBNET_NAME"
+        --network="projects/${PROJECT_ID}/global/networks/${VPC_NAME}" \
+        --subnetwork="projects/${PROJECT_ID}/regions/${REGION}/subnetworks/${SUBNET_NAME}"
 fi
 # Verify
 if gcloud workstations clusters describe "$CLUSTER" \

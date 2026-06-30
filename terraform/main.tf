@@ -1,10 +1,40 @@
 # =============================================================================
+# Enable Required GCP APIs
+# =============================================================================
+
+resource "google_project_service" "workstations" {
+  service                    = "workstations.googleapis.com"
+  disable_on_destroy         = false
+  disable_dependent_services = false
+}
+
+resource "google_project_service" "artifactregistry" {
+  service                    = "artifactregistry.googleapis.com"
+  disable_on_destroy         = false
+  disable_dependent_services = false
+}
+
+resource "google_project_service" "compute" {
+  service                    = "compute.googleapis.com"
+  disable_on_destroy         = false
+  disable_dependent_services = false
+}
+
+resource "google_project_service" "cloudscheduler" {
+  service                    = "cloudscheduler.googleapis.com"
+  disable_on_destroy         = false
+  disable_dependent_services = false
+}
+
+# =============================================================================
 # Network Setup
 # =============================================================================
 
 resource "google_compute_network" "workstations_vpc" {
   name                    = "workstations-vpc"
   auto_create_subnetworks = false
+
+  depends_on = [google_project_service.compute]
 }
 
 resource "google_compute_subnetwork" "workstations_subnet" {
@@ -50,6 +80,8 @@ resource "google_artifact_registry_repository" "workstation_images" {
       older_than = "2592000s" # 30 days
     }
   }
+
+  depends_on = [google_project_service.artifactregistry]
 }
 
 # =============================================================================
@@ -70,30 +102,32 @@ resource "google_workstations_workstation_cluster" "main" {
     cost_center = "cc-1001"
     team        = "platform-eng"
   }
+
+  depends_on = [google_project_service.workstations]
 }
 
 # =============================================================================
 # VM Service Account & Permissions
 # =============================================================================
 
-resource "google_service_account" "sway_workstation" {
-  account_id   = "sway-workstation-sa"
-  display_name = "Sway Workstation VM Service Account"
+resource "google_service_account" "workstation" {
+  account_id   = "workstation-sa"
+  display_name = "Workstation VM Service Account"
 }
 
 # Grant the Workstation VM Service Account read access to the Artifact Registry repository
-resource "google_artifact_registry_repository_iam_member" "sway_sa_ar_reader" {
+resource "google_artifact_registry_repository_iam_member" "workstation_sa_ar_reader" {
   repository = google_artifact_registry_repository.workstation_images.name
   location   = google_artifact_registry_repository.workstation_images.location
   role       = "roles/artifactregistry.reader"
-  member     = "serviceAccount:${google_service_account.sway_workstation.email}"
+  member     = "serviceAccount:${google_service_account.workstation.email}"
 }
 
 # =============================================================================
 # Workstation Configuration
 # =============================================================================
 
-resource "google_workstations_workstation_config" "sway" {
+resource "google_workstations_workstation_config" "main" {
   provider               = google-beta
   workstation_config_id  = var.workstation_config_id
   workstation_cluster_id = google_workstations_workstation_cluster.main.workstation_cluster_id
@@ -104,7 +138,7 @@ resource "google_workstations_workstation_config" "sway" {
       machine_type                = var.machine_type
       boot_disk_size_gb           = 200
       disable_public_ip_addresses = true
-      service_account             = google_service_account.sway_workstation.email
+      service_account             = google_service_account.workstation.email
       service_account_scopes      = ["https://www.googleapis.com/auth/cloud-platform"]
 
       shielded_instance_config {
@@ -137,10 +171,10 @@ resource "google_workstations_workstation_config" "sway" {
 # Workstation Instance
 # =============================================================================
 
-resource "google_workstations_workstation" "sway_workstation" {
+resource "google_workstations_workstation" "main" {
   provider               = google-beta
   workstation_id         = var.workstation_id
-  workstation_config_id  = google_workstations_workstation_config.sway.workstation_config_id
+  workstation_config_id  = google_workstations_workstation_config.main.workstation_config_id
   workstation_cluster_id = google_workstations_workstation_cluster.main.workstation_cluster_id
   location               = var.region
 
@@ -158,7 +192,7 @@ resource "google_workstations_workstation_config_iam_member" "user" {
   provider               = google-beta
   location               = var.region
   workstation_cluster_id = google_workstations_workstation_cluster.main.workstation_cluster_id
-  workstation_config_id  = google_workstations_workstation_config.sway.workstation_config_id
+  workstation_config_id  = google_workstations_workstation_config.main.workstation_config_id
   role                   = "roles/workstations.user"
   member                 = "user:${var.user_email}"
 }
@@ -200,7 +234,7 @@ resource "google_compute_resource_policy" "workstation_home_daily_snapshot" {
 resource "null_resource" "attach_workstation_snapshot_policy" {
   triggers = {
     policy_id      = google_compute_resource_policy.workstation_home_daily_snapshot.id
-    workstation_id = google_workstations_workstation.sway_workstation.id
+    workstation_id = google_workstations_workstation.main.id
   }
 
   provisioner "local-exec" {

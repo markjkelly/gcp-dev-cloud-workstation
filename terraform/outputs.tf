@@ -1,6 +1,6 @@
 output "workstation_url" {
-  description = "The direct web URL to connect to the Sway workstation."
-  value       = "https://${google_workstations_workstation.sway_workstation.host}"
+  description = "The direct web URL to connect to the workstation."
+  value       = "https://${google_workstations_workstation.main.host}"
 }
 
 output "artifact_registry_repo" {
@@ -13,7 +13,7 @@ output "vpc_network_name" {
   value       = google_compute_network.workstations_vpc.name
 }
 
-output "sway_service_account_email" {
+output "workstation_service_account_email" {
   description = "The service account email assigned to the workstation VM."
-  value       = google_service_account.sway_workstation.email
+  value       = google_service_account.workstation.email
 }

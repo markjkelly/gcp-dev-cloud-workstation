@@ -165,7 +165,7 @@ if [ ! -d "$IDE_INSTALL_DIR" ]; then
     ide_needs_install=1
 else
     # Directory exists — check installed version against expected
-    IDE_INSTALLED_VERSION=$(python3 -c "import json; print(json.load(open('$IDE_INSTALL_DIR/resources/app/product.json'))['version'])" 2>/dev/null || echo "unknown")
+    IDE_INSTALLED_VERSION=$(python3 -c "import json; print(json.load(open('$IDE_INSTALL_DIR/resources/app/product.json'))['ideVersion'])" 2>/dev/null || echo "unknown")
     if [ "$IDE_INSTALLED_VERSION" = "$IDE_EXPECTED_VERSION" ]; then
         log "Antigravity IDE v2: already at version $IDE_EXPECTED_VERSION — OK"
         ide_needs_install=0

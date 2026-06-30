@@ -23,6 +23,16 @@
 
 ### Changed
 - **Default Region** — Updated default region and `_REGION` fallback in `scripts/ws.sh` to `us-central1`.
+## v1.1.5 — Dynamic Boot Sync & Repository Renaming (2026-06-30)
+
+### Added
+- **Dynamic Repository Cloning** — Automatically clones `gcp-dev-cloud-workstation` repository on workstation boot if directory is missing.
+- **SSH-to-HTTPS Fallback** — Attempts SSH clone if keys exist, falling back to HTTPS clone.
+- **Ownership Correction** — Automatically resets ownership of the cloned repository to user UID/GID `1000:1000`.
+
+### Changed
+- **Repository Rename** — Re-targeted boot sync script and integration tests from `cloud-workstation` to `gcp-dev-cloud-workstation`.
+- **Antigravity CLI Verification** — Updated integration tests to assert correct name and paths for `agy` CLI binary instead of outdated `antigravity-cli`.
 
 ## v1.1.0 — Tooling Cleanups & Deployment Simplification (2026-06-29)
 

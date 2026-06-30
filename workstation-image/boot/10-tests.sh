@@ -1363,6 +1363,17 @@ log "--- F-0136: Antigravity IDE v2 ---"
 # (a) IDE v2 install directory exists
 check_dir "F-0136: IDE v2 install directory" "$HOME_DIR/.local/share/antigravity-ide"
 
+# F-0009: Verify IDE version matches expected
+if [ -f "$HOME_DIR/.local/share/antigravity-ide/resources/app/product.json" ]; then
+    IDE_INSTALLED_VERSION=$(python3 -c "import json; print(json.load(open('$HOME_DIR/.local/share/antigravity-ide/resources/app/product.json'))['ideVersion'])" 2>/dev/null || echo "unknown")
+    IDE_EXPECTED="2.1.1"
+    if [ "$IDE_INSTALLED_VERSION" = "$IDE_EXPECTED" ]; then
+        test_pass "F-0009: Antigravity IDE version $IDE_INSTALLED_VERSION matches expected $IDE_EXPECTED"
+    else
+        test_warn "F-0009: Antigravity IDE version mismatch (installed=$IDE_INSTALLED_VERSION, expected=$IDE_EXPECTED) — will auto-upgrade on next boot"
+    fi
+fi
+
 # (b) IDE v2 binary on PATH (via symlink)
 check_binary "F-0136: IDE v2 binary (antigravity-ide)" "antigravity-ide"
 

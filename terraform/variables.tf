@@ -12,19 +12,19 @@ variable "region" {
 variable "cluster_id" {
   description = "The ID of the Cloud Workstation Cluster."
   type        = string
-  default     = "main-cluster"
+  default     = "workstation-cluster"
 }
 
 variable "workstation_config_id" {
   description = "The ID of the Cloud Workstation Configuration."
   type        = string
-  default     = "sway-config"
+  default     = "ws-config"
 }
 
 variable "workstation_id" {
   description = "The ID of the Cloud Workstation instance."
   type        = string
-  default     = "sway-workstation"
+  default     = "dev-workstation"
 }
 
 variable "machine_type" {

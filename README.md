@@ -5,8 +5,38 @@ Cloud Workstation in GCP with Sway desktop, Nix package manager, and a dev envir
 ## Quick Start
 
 1. Fork and clone this repo.
-2. Initialize Terraform and run a two-phase apply in the `terraform/` folder.
-3. Deploy configurations via `scripts/deploy-configs.sh`.
+2. Choose a setup path:
+   - **Path A (Recommended):** `bash scripts/ws.sh setup -p YOUR_PROJECT_ID` — fully automated, runs everything in Cloud Build.
+   - **Path B (Terraform):** `cd terraform && terraform init && terraform apply` for infrastructure, then Cloud Build for software provisioning.
+
+## Setup Paths
+
+Both setup paths target `workstation-cluster`/`ws-config`/`dev-workstation` by default.
+
+### Path A: Fully Automated (`ws.sh setup`) — Recommended for CI/CD
+
+Runs the entire infrastructure + software provisioning pipeline inside Cloud Build. No local Terraform required.
+
+```bash
+bash scripts/ws.sh setup -p YOUR_PROJECT_ID
+```
+
+This single command will:
+- Enable required GCP APIs
+- Create Artifact Registry and build the Docker image
+- Create VPC, Cloud NAT, Workstation Cluster, Config, and Workstation
+- Install Nix, Home Manager, packages, boot scripts, fonts, languages, and AI tools
+- Create Cloud Scheduler for daily auto-stop
+- Create disk snapshot policy for daily backups
+- Verify noVNC desktop access
+
+Re-running is safe — all steps are idempotent.
+
+### Path B: Terraform + Cloud Build
+
+Use Terraform for infrastructure provisioning (cluster, config, workstation, scheduler, snapshot policies), then Cloud Build for software provisioning. This gives you more control over infrastructure changes.
+
+See the detailed Terraform setup steps below.
 
 ## Setup
 

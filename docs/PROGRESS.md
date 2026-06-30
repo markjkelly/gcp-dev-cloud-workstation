@@ -282,3 +282,50 @@ Milestone 1: Initial Setup
 
 ### Next Steps
 - PO merges PR and tags release v1.2.1.
+
+## Session 10 — 2026-06-30 (F-0010: Align Terraform and Setup Script for Full E2E Coverage)
+
+### Date
+2026-06-30
+
+### Milestone
+Milestone 1: Initial Setup
+
+### Completed
+- **F-0010** (Align Terraform and Setup Script for Full E2E Coverage):
+  - Updated `terraform/variables.tf` defaults from `main-cluster`/`sway-config`/`sway-workstation` to `workstation-cluster`/`ws-config`/`dev-workstation`, aligning Terraform with the test workstation target used by `cloud-build-setup.sh`.
+  - Added `google_project_service` resources in `terraform/main.tf` for required APIs (`workstations`, `artifactregistry`, `compute`, `cloudscheduler`) with `disable_on_destroy = false` and `depends_on` chains.
+  - Renamed all `sway_*` Terraform resource names to generic names:
+    - `google_service_account.sway_workstation` → `.workstation`
+    - `google_artifact_registry_repository_iam_member.sway_sa_ar_reader` → `.workstation_sa_ar_reader`
+    - `google_workstations_workstation_config.sway` → `.main`
+    - `google_workstations_workstation.sway_workstation` → `.main`
+  - Updated service account `account_id` from `sway-workstation-sa` to `workstation-sa` and `display_name` to `Workstation VM Service Account`.
+  - Updated `terraform/scheduler.tf`: renamed `scheduler_sway_user` → `scheduler_user`, `stop_sway_workstation` → `stop_workstation`, scheduler job name to `stop-workstation-8pm-central`. Added `depends_on` for cloudscheduler API.
+  - Updated `terraform/outputs.tf`: renamed `sway_service_account_email` → `workstation_service_account_email`, updated all resource references.
+  - Added Step 18b to `scripts/cloud-build-setup.sh`: creates `workstation-home-daily-snapshots` snapshot schedule policy with daily 04:00 start, 7-day retention, and matching labels. Attaches policy to workstation disks. Both operations idempotent with `|| true`.
+  - Added Setup Paths section to `README.md` documenting Path A (ws.sh setup, fully automated) and Path B (Terraform + Cloud Build).
+  - Created product spec `docs/specs/F-0010-align-terraform-setup.md`.
+  - QA: `terraform init` → success, `terraform validate` → success, `terraform plan -var="project_id=prj-c-workstations-j68o"` → 19 resources to add, all targeting `workstation-cluster`/`ws-config`/`dev-workstation`. `bash -n cloud-build-setup.sh` → syntax OK.
+
+### Files Changed
+- `terraform/variables.tf`
+- `terraform/main.tf`
+- `terraform/scheduler.tf`
+- `terraform/outputs.tf`
+- `scripts/cloud-build-setup.sh`
+- `README.md`
+- `docs/specs/F-0010-align-terraform-setup.md`
+- `docs/BACKLOG.md`
+- `docs/PROGRESS.md`
+- `docs/RELEASENOTES.md`
+
+### Decisions
+- Aligned all Terraform defaults to the test workstation (`workstation-cluster`/`ws-config`/`dev-workstation`) instead of the live workstation to prevent accidental modifications to the active environment.
+- Renamed `sway_*` Terraform resource identifiers to generic names since "sway" is an implementation detail of the desktop environment, not the infrastructure.
+- Added API enablement as Terraform resources (not just gcloud in setup script) so Terraform can bootstrap from a fresh project.
+- Kept snapshot policy identical between Terraform and cloud-build-setup.sh for consistency.
+
+### Next Steps
+- PO merges PR and tags release v1.3.0.
+- Existing Terraform users must `terraform state mv` resources to new names if they have existing state.

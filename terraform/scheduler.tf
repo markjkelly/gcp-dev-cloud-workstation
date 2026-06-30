@@ -8,19 +8,19 @@ resource "google_service_account" "workstation_scheduler" {
 }
 
 # Grant Scheduler service account permission to call the workstations stop API
-resource "google_workstations_workstation_iam_member" "scheduler_sway_user" {
+resource "google_workstations_workstation_iam_member" "scheduler_user" {
   provider               = google-beta
   location               = var.region
   workstation_cluster_id = google_workstations_workstation_cluster.main.workstation_cluster_id
-  workstation_config_id  = google_workstations_workstation_config.sway.workstation_config_id
-  workstation_id         = google_workstations_workstation.sway_workstation.workstation_id
+  workstation_config_id  = google_workstations_workstation_config.main.workstation_config_id
+  workstation_id         = google_workstations_workstation.main.workstation_id
   role                   = "roles/workstations.user"
   member                 = "serviceAccount:${google_service_account.workstation_scheduler.email}"
 }
 
 # Cloud Scheduler Job to stop the workstation daily at 8:00 PM Central time
-resource "google_cloud_scheduler_job" "stop_sway_workstation" {
-  name      = "stop-sway-workstation-8pm-central"
+resource "google_cloud_scheduler_job" "stop_workstation" {
+  name      = "stop-workstation-8pm-central"
   region    = var.region
   schedule  = "0 20 * * *"
   time_zone = "America/Chicago" # Handles DST transitions automatically
@@ -30,8 +30,8 @@ resource "google_cloud_scheduler_job" "stop_sway_workstation" {
       "https://workstations.googleapis.com/v1/projects/${var.project_id}",
       "locations/${var.region}",
       "workstationClusters/${google_workstations_workstation_cluster.main.workstation_cluster_id}",
-      "workstationConfigs/${google_workstations_workstation_config.sway.workstation_config_id}",
-      "workstations/${google_workstations_workstation.sway_workstation.workstation_id}:stop",
+      "workstationConfigs/${google_workstations_workstation_config.main.workstation_config_id}",
+      "workstations/${google_workstations_workstation.main.workstation_id}:stop",
     ])
     http_method = "POST"
 
@@ -47,4 +47,6 @@ resource "google_cloud_scheduler_job" "stop_sway_workstation" {
     max_backoff_duration = "3600s"
     max_doublings        = 5
   }
+
+  depends_on = [google_project_service.cloudscheduler]
 }

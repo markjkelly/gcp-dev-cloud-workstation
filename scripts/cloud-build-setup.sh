@@ -973,6 +973,47 @@ else
 fi
 
 # =========================================================================
+step "Step 18b: Create disk snapshot policy"
+# =========================================================================
+SNAPSHOT_POLICY="workstation-home-daily-snapshots"
+log "Creating snapshot schedule policy '$SNAPSHOT_POLICY'..."
+gcloud compute resource-policies create snapshot-schedule "$SNAPSHOT_POLICY" \
+    --project="$PROJECT_ID" \
+    --region="$REGION" \
+    --start-time="04:00" \
+    --daily-schedule \
+    --max-retention-days=7 \
+    --on-source-disk-delete=keep-auto-snapshots \
+    --snapshot-labels="environment=common,application=cloud-workstation,cost_center=cc-1001,team=platform-eng,data_classification=confidential" \
+    --storage-location="$REGION" \
+    --quiet 2>&1 || true
+
+if gcloud compute resource-policies describe "$SNAPSHOT_POLICY" \
+    --region="$REGION" --project="$PROJECT_ID" >/dev/null 2>&1; then
+    test_pass "Snapshot policy '$SNAPSHOT_POLICY'"
+else
+    test_fail "Snapshot policy '$SNAPSHOT_POLICY' not created"
+fi
+
+# Attach snapshot policy to workstation disks
+log "Attaching snapshot policy to workstation disks..."
+gcloud compute disks list \
+    --project="$PROJECT_ID" \
+    --filter="name:workstations AND zone:$REGION-*" \
+    --format="csv[no-heading](name,zone.scope(zones))" \
+    --quiet \
+| while IFS=, read -r DISK ZONE; do
+    [ -z "$ZONE" ] && continue
+    log "  -> Attaching policy to disk: $DISK ($ZONE)"
+    gcloud compute disks add-resource-policies "$DISK" \
+        --zone="$ZONE" \
+        --resource-policies="$SNAPSHOT_POLICY" \
+        --project="$PROJECT_ID" \
+        --quiet 2>&1 || true
+done
+test_pass "Snapshot policy attachment attempted"
+
+# =========================================================================
 step "Step 19/19: Verify noVNC desktop access"
 # =========================================================================
 # The full chain: Sway (compositor) → wayvnc (VNC on :5901) → noVNC (port 80)

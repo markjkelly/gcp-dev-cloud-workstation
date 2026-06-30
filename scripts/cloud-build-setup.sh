@@ -38,9 +38,9 @@ profile_has_module() {
     echo ",$MODULES," | grep -q ",$1,"
 }
 
-CLUSTER="main-cluster"
-CONFIG="sway-config"
-WORKSTATION="sway-workstation"
+CLUSTER="workstation-cluster"
+CONFIG="ws-config"
+WORKSTATION="dev-workstation"
 AR_REPO="workstation-images"
 IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/${AR_REPO}/dev-workstation:latest"
 SWAY_SA="sway-workstation-sa@${PROJECT_ID}.iam.gserviceaccount.com"
@@ -115,6 +115,63 @@ retry() {
         [ "$attempt" -lt "$max_attempts" ] && { log "  Retry $attempt/$max_attempts (waiting ${delay}s)..."; sleep "$delay"; }
     done
     return 1
+}
+
+# Helper to add IAM binding using get/set IAM policy to avoid missing gcloud commands
+add_ws_iam_binding() {
+    local resource_type=$1
+    local resource_name=$2
+    local member=$3
+    local role=$4
+
+    local tmp_policy="/tmp/policy_$$.json"
+    local set_cmd
+
+    if [ "$resource_type" = "config" ]; then
+        gcloud workstations configs get-iam-policy "$resource_name" \
+            --cluster="$CLUSTER" --region="$REGION" --project="$PROJECT_ID" \
+            --format=json > "$tmp_policy" 2>/dev/null || true
+        set_cmd="gcloud workstations configs set-iam-policy $resource_name $tmp_policy --cluster=$CLUSTER --region=$REGION --project=$PROJECT_ID"
+    elif [ "$resource_type" = "workstation" ]; then
+        gcloud workstations get-iam-policy "$resource_name" \
+            --config="$CONFIG" --cluster="$CLUSTER" --region="$REGION" --project="$PROJECT_ID" \
+            --format=json > "$tmp_policy" 2>/dev/null || true
+        set_cmd="gcloud workstations set-iam-policy $resource_name $tmp_policy --config=$CONFIG --cluster=$CLUSTER --region=$REGION --project=$PROJECT_ID"
+    else
+        return 1
+    fi
+
+    if [ ! -s "$tmp_policy" ]; then
+        echo '{"bindings":[]}' > "$tmp_policy"
+    fi
+
+    python3 -c "
+import json
+try:
+    with open('$tmp_policy', 'r') as f:
+        policy = json.load(f)
+except Exception:
+    policy = {}
+if 'bindings' not in policy:
+    policy['bindings'] = []
+found_role = False
+for b in policy['bindings']:
+    if b.get('role') == '$role':
+        found_role = True
+        if 'members' not in b:
+            b['members'] = []
+        if '$member' not in b['members']:
+            b['members'].append('$member')
+        break
+if not found_role:
+    policy['bindings'].append({'role': '$role', 'members': ['$member']})
+with open('$tmp_policy', 'w') as f:
+    json.dump(policy, f)
+"
+    local status=0
+    eval "$set_cmd" >/dev/null 2>&1 || status=$?
+    rm -f "$tmp_policy"
+    return $status
 }
 
 # Test helper: record pass/fail
@@ -289,7 +346,8 @@ else
     log "Creating cluster (5-10 minutes)..."
     retry 2 30 gcloud workstations clusters create "$CLUSTER" \
         --region="$REGION" --project="$PROJECT_ID" \
-        --network="$VPC_NAME" --subnetwork="$SUBNET_NAME"
+        --network="projects/${PROJECT_ID}/global/networks/${VPC_NAME}" \
+        --subnetwork="projects/${PROJECT_ID}/regions/${REGION}/subnetworks/${SUBNET_NAME}"
 fi
 # Verify
 if gcloud workstations clusters describe "$CLUSTER" \
@@ -324,10 +382,7 @@ for SA in "$SWAY_SA" "$COMPUTE_SA" "$WS_SA"; do
         --role="roles/artifactregistry.reader" \
         --project="$PROJECT_ID" --quiet --format=none 2>&1 || true
 done
-# Cloud Build SA needs workstations.user to SSH into the workstation
-gcloud projects add-iam-policy-binding "$PROJECT_ID" \
-    --member="serviceAccount:$COMPUTE_SA" \
-    --role="roles/workstations.user" --quiet --format=none 2>&1 || true
+
 test_pass "Service account created, AR reader granted"
 
 # =========================================================================
@@ -385,15 +440,11 @@ if [ "$WS_STATE" != "STATE_RUNNING" ]; then
 fi
 
 # Grant SSH access before attempting SSH — compute SA (Cloud Build) and user both need
-# workstations.user on the config, otherwise the SSH loop below will fail for 10 minutes.
-log "Granting workstations.user to compute SA and user on config..."
-gcloud workstations configs add-iam-policy-binding "$CONFIG" \
-    --project="$PROJECT_ID" --region="$REGION" --cluster="$CLUSTER" \
-    --member="serviceAccount:$COMPUTE_SA" --role="roles/workstations.user" 2>/dev/null || true
+# workstations.user on the workstation, otherwise the SSH loop below will fail for 10 minutes.
+log "Granting workstations.user to compute SA and user on workstation..."
+add_ws_iam_binding "workstation" "$WORKSTATION" "serviceAccount:$COMPUTE_SA" "roles/workstations.user" || true
 if [ -n "$USER_ACCOUNT" ]; then
-    gcloud workstations configs add-iam-policy-binding "$CONFIG" \
-        --project="$PROJECT_ID" --region="$REGION" --cluster="$CLUSTER" \
-        --member="user:$USER_ACCOUNT" --role="roles/workstations.user" 2>/dev/null || true
+    add_ws_iam_binding "workstation" "$WORKSTATION" "user:$USER_ACCOUNT" "roles/workstations.user" || true
 fi
 sleep 10  # IAM propagation
 
@@ -437,11 +488,7 @@ step "Step 8b/19: Grant user access to workstation (browser UI)"
 # Now grant workstation-level IAM so the user can also connect via the browser UI.
 if [ -n "$USER_ACCOUNT" ]; then
     log "Granting workstations.user to $USER_ACCOUNT on workstation..."
-    if gcloud workstations add-iam-policy-binding "$WORKSTATION" \
-        --config="$CONFIG" --cluster="$CLUSTER" --region="$REGION" \
-        --project="$PROJECT_ID" \
-        --member="user:$USER_ACCOUNT" --role="roles/workstations.user" \
-        --quiet 2>/dev/null; then
+    if add_ws_iam_binding "workstation" "$WORKSTATION" "user:$USER_ACCOUNT" "roles/workstations.user"; then
         test_pass "Workstation browser access granted to $USER_ACCOUNT"
     else
         test_warn "Could not grant workstation browser access to $USER_ACCOUNT (may already exist)"
@@ -667,7 +714,9 @@ step "Step 11/19: Persist Nix store for restarts"
 # bind-mount it back to /nix on each boot.
 log "Copying /nix to /home/user/nix for restart persistence..."
 ws_ssh_long '
-if [ -d /nix/store ] && [ "$(ls /nix/store/ 2>/dev/null | wc -l)" -gt 0 ]; then
+if mountpoint -q /nix; then
+    echo "COPY_SKIP: /nix is already a mountpoint"
+elif [ -d /nix/store ] && [ "$(ls /nix/store/ 2>/dev/null | wc -l)" -gt 0 ]; then
     rm -rf /home/user/nix 2>/dev/null
     cp -a /nix /home/user/nix
     echo "COPY_DONE: $(du -sh /home/user/nix 2>/dev/null | cut -f1)"
@@ -698,13 +747,17 @@ else
 fi
 
 log "Deploying Operator Mono fonts (proprietary — not in Nix)..."
-tar czf /tmp/operator-mono.tar.gz -C "${REPO_DIR}/dev-fonts/Operator-Mono" .
-cat /tmp/operator-mono.tar.gz | ws_pipe "mkdir -p ~/boot/fonts && tar xzf - -C ~/boot/fonts"
-OP_COUNT=$(ws_ssh "find ~/boot/fonts -name '*.otf' | wc -l")
-if [ "${OP_COUNT:-0}" -ge 1 ]; then
-    test_pass "Operator Mono fonts deployed ($OP_COUNT files)"
+if [ -d "${REPO_DIR}/dev-fonts/Operator-Mono" ]; then
+    tar czf /tmp/operator-mono.tar.gz -C "${REPO_DIR}/dev-fonts/Operator-Mono" .
+    cat /tmp/operator-mono.tar.gz | ws_pipe "mkdir -p ~/boot/fonts && tar xzf - -C ~/boot/fonts"
+    OP_COUNT=$(ws_ssh "find ~/boot/fonts -name '*.otf' | wc -l")
+    if [ "${OP_COUNT:-0}" -ge 1 ]; then
+        test_pass "Operator Mono fonts deployed ($OP_COUNT files)"
+    else
+        test_fail "Operator Mono font deployment (0 OTF files found in ~/boot/fonts)"
+    fi
 else
-    test_fail "Operator Mono font deployment (0 OTF files found in ~/boot/fonts)"
+    test_warn "dev-fonts/Operator-Mono directory not found. Skipping Operator Mono font deploy."
 fi
 
 # =========================================================================
@@ -891,11 +944,7 @@ else
 fi
 
 # Grant scheduler SA workstations.user on the workstation
-gcloud workstations add-iam-policy-binding "$WORKSTATION" \
-    --config="$CONFIG" --cluster="$CLUSTER" --region="$REGION" \
-    --project="$PROJECT_ID" \
-    --member="serviceAccount:$SCHEDULER_SA" \
-    --role="roles/workstations.user" --quiet --format=none 2>/dev/null || true
+add_ws_iam_binding "workstation" "$WORKSTATION" "serviceAccount:$SCHEDULER_SA" "roles/workstations.user" || true
 
 # Remove old schedulers if they exist (name change)
 for old_job in ws-daily-start ws-weekday-start ws-weekday-stop; do

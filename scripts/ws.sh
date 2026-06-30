@@ -15,10 +15,17 @@
 
 set -euo pipefail
 
-REGION="us-west1"
+REGION="us-central1"
 # Auto-detect repo URL from git remote (falls back to placeholder if not in a git repo)
 SCRIPT_DIR_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_URL=$(git -C "$SCRIPT_DIR_ROOT" remote get-url origin 2>/dev/null || echo "https://github.com/markjkelly/cloud-workstation.git")
+
+# Convert SSH format repository URLs (git@github.com:...) to HTTPS format (https://github.com/...)
+# dynamically so that Cloud Build can clone the public repo without SSH credentials/keys.
+if [[ "$REPO_URL" == git@github.com:* ]]; then
+    REPO_URL="https://github.com/${REPO_URL#git@github.com:}"
+fi
+
 CLUSTER="workstation-cluster"
 CONFIG="ws-config"
 WORKSTATION="dev-workstation"
@@ -171,7 +178,7 @@ if [ "$COMMAND" = "setup" ]; then
     else
         log "  Creating default network..."
         gcloud compute networks create default \
-            --subnet-mode=auto --project="$PROJECT_ID" --quiet 2>&1 | head -3
+            --subnet-mode=auto --project="$PROJECT_ID" --quiet >/dev/null 2>&1
         log "  Default network created"
     fi
 
@@ -258,7 +265,7 @@ if [ "$COMMAND" = "setup" ]; then
     cat > "${TMPDIR}/cloudbuild.yaml" << 'BUILDEOF'
 steps:
   - name: 'gcr.io/cloud-builders/git'
-    args: ['clone', '${_REPO_URL}', '/workspace/repo']
+    args: ['clone', '--branch', '${_BRANCH_NAME}', '${_REPO_URL}', '/workspace/repo']
     id: 'clone-repo'
 
   - name: 'gcr.io/cloud-builders/gcloud'
@@ -274,7 +281,8 @@ steps:
 timeout: 7200s
 substitutions:
   _REPO_URL: 'https://github.com/markjkelly/cloud-workstation.git'
-  _REGION: 'us-west1'
+  _BRANCH_NAME: 'main'
+  _REGION: 'us-central1'
   _WEBHOOK_URL: ''
   _EMAIL_FUNC_URL: ''
   _EMAIL: ''
@@ -285,10 +293,13 @@ options:
   machineType: 'E2_HIGHCPU_8'
 BUILDEOF
 
+    # Get current branch name to build from the correct git ref
+    BRANCH_NAME=$(git -C "$SCRIPT_DIR_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main")
+
     # Build the substitutions array — use gcloud's --substitutions flag carefully.
     # Webhook URLs contain & and = which are safe in Cloud Build substitution values
     # but must be properly quoted when passed via shell.
-    SUBS_ARGS=("_REPO_URL=${REPO_URL}" "_REGION=${REGION}" "_USER_ACCOUNT=${ACCOUNT}" "_PROFILE=${PROFILE}")
+    SUBS_ARGS=("_REPO_URL=${REPO_URL}" "_BRANCH_NAME=${BRANCH_NAME}" "_REGION=${REGION}" "_USER_ACCOUNT=${ACCOUNT}" "_PROFILE=${PROFILE}")
     [ -n "$WEBHOOK_URL" ] && SUBS_ARGS+=("_WEBHOOK_URL=${WEBHOOK_URL}")
     [ -n "$EMAIL_FUNCTION_URL" ] && SUBS_ARGS+=("_EMAIL_FUNC_URL=${EMAIL_FUNCTION_URL}" "_EMAIL=${EMAIL}")
 

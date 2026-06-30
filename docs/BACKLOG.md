@@ -29,4 +29,5 @@
 | F-0006 | Remove Tailscale | — | P1 | backlog | — | — | — | Remove Tailscale client, boot script (06a-tailscale.sh), all config references, and related tests |
 | F-0007 | Fix Boot Test Failures on Fresh Workstation | docs/specs/F-0007-fix-boot-test-failures.md | P0 | done | SWE | feature/fix-boot-test-failures | F-0002 | Fixes race condition, font deployment, stale assertions, over-delete guards (GH #15, #16, #17, #18) |
 | F-0008 | Remove Profile/Module System | — | P1 | backlog | — | — | F-0006 | Remove PROFILE_MODULES, ws_module_enabled, ws-modules.sh, ws-modules.conf. Always run all scripts — no conditional gating. Simplifies setup.sh, 10-tests.sh, cloud-build-setup.sh, deploy-configs.sh |
+| F-0009 | Update Antigravity IDE to v2.1.1 | docs/specs/F-0009-update-antigravity-ide.md | P1 | in-progress | SWE | feature/update-antigravity-ide | F-0136 | Version-aware upgrade logic: detect installed version from product.json, backup old install, download new version |
 

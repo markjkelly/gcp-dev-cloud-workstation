@@ -153,18 +153,40 @@ log "F-0136: Installing Antigravity IDE v2..."
 IDE_INSTALL_DIR="$HOME_DIR/.local/share/antigravity-ide"
 IDE_SYMLINK="$HOME_DIR/.local/bin/antigravity-ide"
 IDE_DESKTOP="$HOME_DIR/.local/share/applications/antigravity-ide.desktop"
-IDE_URL="https://edgedl.me.gvt1.com/edgedl/release2/j0qc3/antigravity/stable/2.0.4-6381998290370560/linux-x64/Antigravity%20IDE.tar.gz"
+IDE_URL="https://edgedl.me.gvt1.com/edgedl/release2/j0qc3/antigravity/stable/2.1.1-6123990880747520/linux-x64/Antigravity%20IDE.tar.gz"
 IDE_TEMP="/tmp/antigravity-ide-v2-download.tar.gz"
+IDE_EXPECTED_VERSION="2.1.1"
 
+# Version-aware install/upgrade logic (F-0009)
+ide_needs_install=0
 if [ ! -d "$IDE_INSTALL_DIR" ]; then
-    log "Antigravity IDE v2 not found — downloading and extracting..."
+    # Fresh install — directory does not exist
+    log "Antigravity IDE v2 not found — will download and install..."
+    ide_needs_install=1
+else
+    # Directory exists — check installed version against expected
+    IDE_INSTALLED_VERSION=$(python3 -c "import json; print(json.load(open('$IDE_INSTALL_DIR/resources/app/product.json'))['version'])" 2>/dev/null || echo "unknown")
+    if [ "$IDE_INSTALLED_VERSION" = "$IDE_EXPECTED_VERSION" ]; then
+        log "Antigravity IDE v2: already at version $IDE_EXPECTED_VERSION — OK"
+        ide_needs_install=0
+    else
+        log "Antigravity IDE v2: version mismatch (installed=$IDE_INSTALLED_VERSION, expected=$IDE_EXPECTED_VERSION) — upgrading..."
+        # Backup old installation
+        BACKUP_SUFFIX=$(date +%s)
+        runuser -u $USER -- mv "$IDE_INSTALL_DIR" "${IDE_INSTALL_DIR}.bak.${BACKUP_SUFFIX}"
+        log "Antigravity IDE v2: backed up old install to ${IDE_INSTALL_DIR}.bak.${BACKUP_SUFFIX}"
+        ide_needs_install=1
+    fi
+fi
+
+if [ "$ide_needs_install" -eq 1 ]; then
     runuser -u $USER -- mkdir -p "$HOME_DIR/.local/share" "$HOME_DIR/.local/bin" "$HOME_DIR/.local/share/applications"
     if runuser -u $USER -- curl -fsSL --retry 3 --retry-delay 5 --connect-timeout 30 -o "$IDE_TEMP" "$IDE_URL" >> "$LOG_FILE" 2>&1; then
         if runuser -u $USER -- tar -xzf "$IDE_TEMP" -C "$HOME_DIR/.local/share/" >> "$LOG_FILE" 2>&1; then
             # Tarball extracts to "Antigravity IDE/" — rename to standard install dir
             runuser -u $USER -- mv "$HOME_DIR/.local/share/Antigravity IDE" "$IDE_INSTALL_DIR" 2>/dev/null || true
             rm -f "$IDE_TEMP"
-            log "Antigravity IDE v2: downloaded and extracted — OK"
+            log "Antigravity IDE v2: downloaded and extracted v${IDE_EXPECTED_VERSION} — OK"
         else
             log "Antigravity IDE v2: extraction FAILED (rc=$?) — check $LOG_FILE for details"
             rm -f "$IDE_TEMP"
@@ -173,8 +195,9 @@ if [ ! -d "$IDE_INSTALL_DIR" ]; then
         log "Antigravity IDE v2: download FAILED (rc=$?) — check $LOG_FILE for details"
         rm -f "$IDE_TEMP"
     fi
-else
-    log "Antigravity IDE v2: already installed at $IDE_INSTALL_DIR — OK"
+
+    # Clean up old backups older than 7 days
+    find "$HOME_DIR/.local/share/" -maxdepth 1 -name "antigravity-ide.bak.*" -type d -mtime +7 -exec rm -rf {} + 2>/dev/null || true
 fi
 
 # Deploy wrapper script and .desktop file if the installation directory exists

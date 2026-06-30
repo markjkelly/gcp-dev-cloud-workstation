@@ -101,11 +101,12 @@ Build a Cloud Workstation in GCP. The Cloud Workstation machine should have 32GB
 
 ## Product Owner / CEO
 
-- **Name:** Your Name
+- **Name:** Mark Kelly
 - **Role:** Product Owner (PO) and CEO — the human in the loop
-- **GitHub:** your-github-username
-- **Email:** your-email@example.com
-- **Git config:** Always use `git -c user.name="Your Name" -c user.email="your-email@example.com"` for commits so authorship is consistent in history.
+- **GitHub:** markjkelly
+- **Email:** markjkelly@google.com
+- **Git config:** Always use `git -c user.name="Mark Kelly" -c user.email="markjkelly@google.com"` for commits so authorship is consistent in history.
+
 
 ## Version Control
 

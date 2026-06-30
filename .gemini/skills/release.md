@@ -13,11 +13,11 @@ User invokes `/release` with a version number (e.g., `/release v0.5.0`).
    - Summarize changes since the last release by reading recent git commits
 3. **Commit the release** — Stage and commit all pending changes:
    ```
-   git -c user.name="Your Name" -c user.email="your-email@example.com" commit -am "Release vX.Y.Z: summary"
+   git -c user.name="Mark Kelly" -c user.email="markjkelly@google.com" commit -am "Release vX.Y.Z: summary"
    ```
 4. **Create an annotated git tag:**
    ```
-   git -c user.name="Your Name" -c user.email="your-email@example.com" tag -a vX.Y.Z -m "Release vX.Y.Z: summary"
+   git -c user.name="Mark Kelly" -c user.email="markjkelly@google.com" tag -a vX.Y.Z -m "Release vX.Y.Z: summary"
    ```
 5. **Push the commit and tag:**
    ```
@@ -28,5 +28,5 @@ User invokes `/release` with a version number (e.g., `/release v0.5.0`).
 ## Project Context
 
 - **Project:** Cloud Workstation
-- **Owner:** Your Name (your-email@example.com)
+- **Owner:** Mark Kelly (markjkelly@google.com)
 - **Release notes:** `docs/RELEASENOTES.md`

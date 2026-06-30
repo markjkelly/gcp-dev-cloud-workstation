@@ -36,4 +36,4 @@ User invokes `/refactor` with a target file, function, or module to refactor.
 ## Project Context
 
 - **Project:** Cloud Workstation
-- **Owner:** Your Name (your-email@example.com)
+- **Owner:** Mark Kelly (markjkelly@google.com)

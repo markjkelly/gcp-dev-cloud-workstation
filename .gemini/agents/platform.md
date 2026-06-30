@@ -31,5 +31,5 @@ You are the Platform Engineer (PE) for the Cloud Workstation project. You own al
 ## Rules
 
 - Never commit service account keys
-- All commits: `git -c user.name="Your Name" -c user.email="your-email@example.com"`
+- All commits: `git -c user.name="Mark Kelly" -c user.email="markjkelly@google.com"`
 - Clean up old Artifact Registry images after deployments

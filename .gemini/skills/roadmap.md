@@ -28,5 +28,5 @@ User invokes `/roadmap` with a feature idea or description.
 ## Project Context
 
 - **Project:** Cloud Workstation
-- **Owner:** Your Name (your-email@example.com)
+- **Owner:** Mark Kelly (markjkelly@google.com)
 - **Backlog:** `docs/BACKLOG.md`

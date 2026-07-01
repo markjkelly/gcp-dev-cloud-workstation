@@ -589,6 +589,25 @@ elif [ "$COMMAND" = "teardown" ]; then
         log "  Cloud Build API not enabled — skipping"
     fi
 
+    # 10. Delete Persistent Disks (to ensure fresh start)
+    log "Deleting persistent home disks..."
+    DISK_LIST=$(gcloud compute disks list \
+        --project="$PROJECT_ID" \
+        --filter="name:workstations AND zone:$REGION-*" \
+        --format="value(name,zone.scope(zones))" --quiet 2>/dev/null || true)
+    
+    if [ -n "$DISK_LIST" ]; then
+        echo "$DISK_LIST" | while read -r DISK ZONE; do
+            [ -z "$DISK" ] && continue
+            log "  Deleting disk: $DISK ($ZONE)"
+            gcloud_timeout 60 gcloud compute disks delete "$DISK" \
+                --zone="$ZONE" --project="$PROJECT_ID" --quiet || log "  WARN: disk delete failed"
+        done
+        log "  Persistent disks deleted"
+    else
+        log "  No persistent disks found"
+    fi
+
     echo ""
     echo "============================================="
     echo " Teardown complete!"
@@ -598,5 +617,5 @@ elif [ "$COMMAND" = "teardown" ]; then
     echo " To set up again: bash scripts/ws.sh setup -p $PROJECT_ID"
     echo "============================================="
 
-    notify_all "Teardown Complete" "Project: ${PROJECT_ID}" "All Cloud Workstation resources deleted."
+    notify_all "Teardown Complete" "Project: ${PROJECT_ID}" "All Cloud Workstation resources and disks deleted."
 fi

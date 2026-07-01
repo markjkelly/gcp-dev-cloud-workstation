@@ -268,6 +268,10 @@ NIXEOF
   cat workstation-image/configs/waybar/config.jsonc | ws_pipe "cat > ~/.config/home-manager/waybar-config.json"
   cat workstation-image/configs/waybar/style.css | ws_pipe "cat > ~/.config/home-manager/waybar-style.css"
 
+  # 3.1 Prepare persistent Nix store BEFORE installation
+  log "Preparing persistent Nix store..."
+  ws_ssh "sudo mkdir -p /home/user/nix && sudo mkdir -p /nix && sudo mount --bind /home/user/nix /nix"
+
   # Install Nix
   log "Installing Nix (this may take a minute)..."
   ws_ssh "curl -L -o /tmp/nix-install.sh https://nixos.org/nix/install && chmod +x /tmp/nix-install.sh && sh /tmp/nix-install.sh --no-daemon"
@@ -283,9 +287,9 @@ NIXEOF
   log "Installing all Nix packages via Home Manager (this can take 5-10 minutes)..."
   ws_ssh "${NIX_SOURCE} && home-manager switch"
 
-  # Persist Nix store to persistent disk
-  log "Persisting Nix store to HOME disk for boot survival..."
-  ws_ssh "sudo cp -a /nix /home/user/nix"
+  # Final sync and integrity check
+  log "Verifying installation integrity..."
+  ws_ssh "sync && test -s ~/.nix-profile/bin/sway && test -s ~/.nix-profile/bin/wayvnc && echo 'Integrity check PASSED' || (echo 'Integrity check FAILED: Binaries are missing or empty' && exit 1)"
 fi
 
 echo "============================================="

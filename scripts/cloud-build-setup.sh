@@ -43,7 +43,7 @@ CONFIG="${WS_CONFIG:-gcp-dev-cloud-workstation-config}"
 WORKSTATION="${WS_WORKSTATION:-gcp-dev-cloud-workstation}"
 AR_REPO="workstation-images"
 IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/${AR_REPO}/dev-workstation:latest"
-SWAY_SA="sway-workstation-sa@${PROJECT_ID}.iam.gserviceaccount.com"
+WS_VM_SA="gcp-dev-cloud-workstation-sa@${PROJECT_ID}.iam.gserviceaccount.com"
 PASS=0; FAIL=0; WARN=0
 START_TIME=$(date +%s)
 
@@ -362,20 +362,24 @@ step "Step 6/19: Create service account + grant AR access"
 # =========================================================================
 COMPUTE_SA="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
 WS_SA="service-${PROJECT_NUMBER}@gcp-sa-workstations.iam.gserviceaccount.com"
+WS_VM_SA="gcp-dev-cloud-workstation-sa@${PROJECT_ID}.iam.gserviceaccount.com"
 
-# Create dedicated service account for sway workstation VMs
-if gcloud iam service-accounts describe "$SWAY_SA" \
-    --project="$PROJECT_ID" >/dev/null 2>&1; then
-    log "Service account $SWAY_SA exists — skipping"
+# Create dedicated service account for workstation VMs
+if gcloud iam service-accounts describe "$WS_VM_SA" \
+    --project="$PROJECT_ID" > /dev/null 2>&1; then
+    log "Service account $WS_VM_SA exists — skipping"
 else
-    log "Creating service account sway-workstation-sa..."
-    gcloud iam service-accounts create sway-workstation-sa \
-        --display-name="Sway Workstation VM Service Account" \
+    log "Creating service account gcp-dev-cloud-workstation-sa..."
+    gcloud iam service-accounts create gcp-dev-cloud-workstation-sa \
+        --display-name="Cloud Workstation VM Service Account" \
         --project="$PROJECT_ID"
+    # Wait for SA to propagate before IAM bindings (GCP eventual consistency)
+    log "Waiting 10s for SA propagation..."
+    sleep 10
 fi
 
 # Grant AR reader to workstation SA (for image pull) and Cloud Build SA (for setup)
-for SA in "$SWAY_SA" "$COMPUTE_SA" "$WS_SA"; do
+for SA in "$WS_VM_SA" "$COMPUTE_SA" "$WS_SA"; do
     gcloud artifacts repositories add-iam-policy-binding "$AR_REPO" \
         --location="$REGION" \
         --member="serviceAccount:${SA}" \
@@ -397,7 +401,7 @@ else
         --machine-type=n2-standard-8 \
         --pd-disk-size=200 --pd-disk-type=pd-balanced \
         --container-custom-image="$IMAGE" \
-        --service-account="$SWAY_SA" \
+        --service-account="$WS_VM_SA" \
         --service-account-scopes="https://www.googleapis.com/auth/cloud-platform" \
         --idle-timeout=0 --running-timeout=43200 \
         --disable-public-ip-addresses \

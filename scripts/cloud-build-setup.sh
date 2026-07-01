@@ -304,7 +304,7 @@ if gcloud compute networks describe "$VPC_NAME" --project="$PROJECT_ID" >/dev/nu
 else
     log "Creating VPC $VPC_NAME..."
     gcloud compute networks create "$VPC_NAME" \
-        --subnet-mode=custom --project="$PROJECT_ID" --quiet 2>&1 | head -3
+        --subnet-mode=custom --project="$PROJECT_ID" --quiet
 fi
 
 if gcloud compute networks subnets describe "$SUBNET_NAME" \

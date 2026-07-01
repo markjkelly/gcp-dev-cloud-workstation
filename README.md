@@ -11,7 +11,7 @@ Cloud Workstation in GCP with Sway desktop, Nix package manager, and a dev envir
 
 ## Setup Paths
 
-Both setup paths target `workstation-cluster`/`ws-config`/`dev-workstation` by default.
+Both setup paths target `workstation-cluster`/`ws-config`/`dev-workstation` by default. These can be overridden using the naming flags described in the [Custom Naming](#custom-naming) section.
 
 ### Path A: Fully Automated (`ws.sh setup`) — Recommended for CI/CD
 
@@ -38,12 +38,37 @@ Use Terraform for infrastructure provisioning (cluster, config, workstation, sch
 
 See the detailed Terraform setup steps below.
 
+### Custom Naming
+If you want to use a custom naming scheme (e.g., `gcp-dev-cloud-workstation`), use these flags:
+
+**Path A (`ws.sh`):**
+```bash
+bash scripts/ws.sh setup -p YOUR_PROJECT_ID \
+  --cluster workstation-cluster \
+  --config ws-config \
+  --workstation dev-workstation
+```
+
+**Path B (`deploy-configs.sh`):**
+```bash
+bash scripts/deploy-configs.sh -p YOUR_PROJECT_ID \
+  -c workstation-cluster \
+  -f ws-config \
+  -w dev-workstation
+```
+
+If using Terraform (Path B), ensure you pass the matching variables:
+```bash
+terraform apply -var="project_id=..." -var="cluster_id=..." -var="workstation_config_id=..." -var="workstation_id=..."
+```
+
 ## Setup
 
 ### Prerequisites
 
-1. A GCP project where you have the **Owner** role.
+1. A GCP project where you have the **Owner** role (or specific granular permissions: `workstations.admin`, `artifactregistry.admin`, `compute.admin`, `cloudbuild.builds.editor`, `iam.serviceAccountUser`).
 2. [Terraform](https://developer.hashicorp.com/terraform/downloads) (>= 1.0) and the `gcloud` CLI installed.
+3. **GPU Quota**: Ensure your project has `NVIDIA_T4_GPUS` (or similar) quota in the target region.
 
 ### Step 1: Authenticate
 
@@ -106,8 +131,8 @@ terraform apply -var="project_id=YOUR_PROJECT_ID"
 Start the workstation if it's not already running:
 
 ```bash
-gcloud workstations start sway-workstation \
-  --cluster=main-cluster \
+gcloud workstations start dev-workstation \
+  --cluster=workstation-cluster \
   --region=us-central1 \
   --project=YOUR_PROJECT_ID
 ```
@@ -124,8 +149,8 @@ bash scripts/deploy-configs.sh -p YOUR_PROJECT_ID
 Stop and start your workstation to trigger the persistent boot scripts (which mount `/nix`, start the Sway desktop, and configure the desktop environment):
 
 ```bash
-gcloud workstations stop sway-workstation --cluster=main-cluster --region=us-central1 --project=YOUR_PROJECT_ID
-gcloud workstations start sway-workstation --cluster=main-cluster --region=us-central1 --project=YOUR_PROJECT_ID
+gcloud workstations stop dev-workstation --cluster=workstation-cluster --region=us-central1 --project=YOUR_PROJECT_ID
+gcloud workstations start dev-workstation --cluster=workstation-cluster --region=us-central1 --project=YOUR_PROJECT_ID
 ```
 
 ### Step 7: Configure Chrome Remote Desktop (CRD)

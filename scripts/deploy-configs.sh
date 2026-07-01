@@ -297,9 +297,9 @@ echo "   gcloud workstations stop $WORKSTATION --cluster=$CLUSTER --config=$CONF
 echo "   gcloud workstations start $WORKSTATION --cluster=$CLUSTER --config=$CONFIG --region=$REGION --project=$PROJECT_ID"
 echo ""
 echo " Once started, connect via the browser URL or run:"
-echo "   gcloud workstations ssh "$WORKSTATION" \
-    --cluster="$CLUSTER" \
-    --config="$CONFIG" \
-    --region="$REGION" \
-    --project="$PROJECT_ID"
+echo "   gcloud workstations ssh $WORKSTATION \\"
+echo "    --cluster=$CLUSTER \\"
+echo "    --config=$CONFIG \\"
+echo "    --region=$REGION \\"
+echo "    --project=$PROJECT_ID"
 echo "============================================="

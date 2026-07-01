@@ -231,6 +231,13 @@ if [ "$COMMAND" = "setup" ]; then
         fi
     fi
 
+    # --- Enable prerequisite APIs ---
+    # Service Usage API must be enabled first so the Cloud Build job
+    # can enable other APIs from within the container (new projects
+    # may not have it enabled).
+    log "Enabling Service Usage API (prerequisite)..."
+    gcloud services enable serviceusage.googleapis.com --project="$PROJECT_ID" --quiet 2>/dev/null
+
     # --- Enable Cloud Build API ---
     log "Enabling Cloud Build API..."
     gcloud services enable cloudbuild.googleapis.com --project="$PROJECT_ID" --quiet 2>/dev/null

@@ -26,9 +26,9 @@ if [[ "$REPO_URL" == git@github.com:* ]]; then
     REPO_URL="https://github.com/${REPO_URL#git@github.com:}"
 fi
 
-CLUSTER="workstation-cluster"
-CONFIG="ws-config"
-WORKSTATION="dev-workstation"
+CLUSTER="main-cluster"
+CONFIG="gcp-dev-cloud-workstation-config"
+WORKSTATION="gcp-dev-cloud-workstation"
 AR_REPO="workstation-images"
 
 usage() {
@@ -42,6 +42,11 @@ usage() {
     echo ""
     echo "Required:"
     echo "  -p, --project PROJECT_ID    GCP project ID"
+    echo ""
+    echo "Optional Resources (Custom Naming):"
+    echo "  -c, --cluster CLUSTER       Cluster name (default: main-cluster)"
+    echo "  -f, --config CONFIG         Config name (default: gcp-dev-cloud-workstation-config)"
+    echo "  --workstation NAME          Workstation name (default: gcp-dev-cloud-workstation)"
     echo ""
     echo "Optional:"
     echo "  --profile PROFILE           Install profile: minimal, dev, ai, full (default: full)"
@@ -76,13 +81,16 @@ CUSTOM_MODULES=""
 SKIP_CONFIRM=false
 while [[ $# -gt 0 ]]; do
     case $1 in
-        -p|--project)  PROJECT_ID="$2"; shift 2 ;;
-        --profile)     PROFILE="$2"; shift 2 ;;
-        --modules)     CUSTOM_MODULES="$2"; PROFILE="custom"; shift 2 ;;
-        -w|--webhook)  WEBHOOK_URL="$2"; shift 2 ;;
-        -e|--email)    EMAIL="$2"; shift 2 ;;
-        -y|--yes)      SKIP_CONFIRM=true; shift ;;
-        -h|--help)     usage ;;
+        -p|--project)     PROJECT_ID="$2"; shift 2 ;;
+        -c|--cluster)     CLUSTER="$2"; shift 2 ;;
+        -f|--config)      CONFIG="$2"; shift 2 ;;
+        --workstation)    WORKSTATION="$2"; shift 2 ;;
+        --profile)        PROFILE="$2"; shift 2 ;;
+        --modules)        CUSTOM_MODULES="$2"; PROFILE="custom"; shift 2 ;;
+        -w|--webhook)     WEBHOOK_URL="$2"; shift 2 ;;
+        -e|--email)       EMAIL="$2"; shift 2 ;;
+        -y|--yes)         SKIP_CONFIRM=true; shift ;;
+        -h|--help)        usage ;;
         *) echo "Unknown option: $1"; usage ;;
     esac
 done
@@ -274,6 +282,9 @@ steps:
       - '-c'
       - |
         cd /workspace/repo
+        export WS_CLUSTER="${_CLUSTER}"
+        export WS_CONFIG="${_CONFIG}"
+        export WS_WORKSTATION="${_WORKSTATION}"
         bash scripts/cloud-build-setup.sh "${PROJECT_ID}" "${_REGION}" "${_WEBHOOK_URL}" "${_EMAIL_FUNC_URL}" "${_EMAIL}" "${_USER_ACCOUNT}" "${_PROFILE}"
     id: 'run-setup'
     waitFor: ['clone-repo']
@@ -288,6 +299,9 @@ substitutions:
   _EMAIL: ''
   _USER_ACCOUNT: ''
   _PROFILE: 'full'
+  _CLUSTER: 'workstation-cluster'
+  _CONFIG: 'ws-config'
+  _WORKSTATION: 'dev-workstation'
 options:
   logging: CLOUD_LOGGING_ONLY
   machineType: 'E2_HIGHCPU_8'
@@ -299,7 +313,7 @@ BUILDEOF
     # Build the substitutions array — use gcloud's --substitutions flag carefully.
     # Webhook URLs contain & and = which are safe in Cloud Build substitution values
     # but must be properly quoted when passed via shell.
-    SUBS_ARGS=("_REPO_URL=${REPO_URL}" "_BRANCH_NAME=${BRANCH_NAME}" "_REGION=${REGION}" "_USER_ACCOUNT=${ACCOUNT}" "_PROFILE=${PROFILE}")
+    SUBS_ARGS=("_REPO_URL=${REPO_URL}" "_BRANCH_NAME=${BRANCH_NAME}" "_REGION=${REGION}" "_USER_ACCOUNT=${ACCOUNT}" "_PROFILE=${PROFILE}" "_CLUSTER=${CLUSTER}" "_CONFIG=${CONFIG}" "_WORKSTATION=${WORKSTATION}")
     [ -n "$WEBHOOK_URL" ] && SUBS_ARGS+=("_WEBHOOK_URL=${WEBHOOK_URL}")
     [ -n "$EMAIL_FUNCTION_URL" ] && SUBS_ARGS+=("_EMAIL_FUNC_URL=${EMAIL_FUNCTION_URL}" "_EMAIL=${EMAIL}")
 

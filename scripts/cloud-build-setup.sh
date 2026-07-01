@@ -38,9 +38,9 @@ profile_has_module() {
     echo ",$MODULES," | grep -q ",$1,"
 }
 
-CLUSTER="workstation-cluster"
-CONFIG="ws-config"
-WORKSTATION="dev-workstation"
+CLUSTER="${WS_CLUSTER:-main-cluster}"
+CONFIG="${WS_CONFIG:-gcp-dev-cloud-workstation-config}"
+WORKSTATION="${WS_WORKSTATION:-gcp-dev-cloud-workstation}"
 AR_REPO="workstation-images"
 IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/${AR_REPO}/dev-workstation:latest"
 SWAY_SA="sway-workstation-sa@${PROJECT_ID}.iam.gserviceaccount.com"

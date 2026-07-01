@@ -16,8 +16,8 @@ set -euo pipefail
 
 REGION="us-central1"
 CLUSTER="main-cluster"
-WORKSTATION="sway-workstation"
-CONFIG="sway-config"
+WORKSTATION="gcp-dev-cloud-workstation"
+CONFIG="gcp-dev-cloud-workstation-config"
 PROJECT_ID=""
 
 usage() {
@@ -28,7 +28,8 @@ usage() {
   echo "  -p, --project PROJECT_ID     GCP project ID (required)"
   echo "  -r, --region REGION          GCP region (default: us-central1)"
   echo "  -c, --cluster CLUSTER        Workstation cluster name (default: main-cluster)"
-  echo "  -w, --workstation NAME       Workstation name (default: sway-workstation)"
+  echo "  -w, --workstation NAME       Workstation name (default: gcp-dev-cloud-workstation)"
+  echo "  -f, --config CONFIG          Workstation config name (default: gcp-dev-cloud-workstation-config)"
   exit 1
 }
 
@@ -39,6 +40,7 @@ while [[ $# -gt 0 ]]; do
     -r|--region)      REGION="$2"; shift 2 ;;
     -c|--cluster)     CLUSTER="$2"; shift 2 ;;
     -w|--workstation) WORKSTATION="$2"; shift 2 ;;
+    -f|--config)      CONFIG="$2"; shift 2 ;;
     -h|--help)        usage ;;
     *) echo "Unknown option: $1"; usage ;;
   esac

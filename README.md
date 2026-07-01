@@ -199,6 +199,20 @@ gcloud workstations start gcp-dev-cloud-workstation \
   --project=YOUR_PROJECT_ID
 ```
 
+## Troubleshooting
+
+### Browser Connection Error (Port 80)
+If you see the error `Unable to forward your request to a backend. Couldn't connect to a server on port 80` when opening the workstation URL:
+
+*   **Initial Bootstrap**: On the first boot after running `deploy-configs.sh`, the workstation performs a full compilation of language toolchains (Ruby, Python) to ensure they are properly optimized for the persistent home disk. This process is **blocking** and can take **10-15 minutes**.
+*   **Delayed Startup**: The system manager (`systemd`) and desktop services (`noVNC`) will not start until these bootstrap scripts complete.
+*   **Monitoring**: You can monitor the progress by SSHing into the workstation and checking the process list:
+    ```bash
+    gcloud workstations ssh gcp-dev-cloud-workstation --command "ps -ef | grep ruby"
+    ```
+*   **Resolution**: Simply wait for the compilation to finish. The workstation will automatically become reachable on port 80 once the scripts exit and `systemd` takes over.
+
+
 ### Connect via browser
 
 Get the workstation URL:

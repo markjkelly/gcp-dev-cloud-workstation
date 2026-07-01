@@ -57,6 +57,7 @@ log() { echo "[$(date '+%H:%M:%S')] $1"; }
 log "Checking workstation status..."
 STATE=$(gcloud workstations describe "$WORKSTATION" \
   --cluster="$CLUSTER" \
+  --config="$CONFIG" \
   --region="$REGION" \
   --project="$PROJECT_ID" \
   --format="value(state)" 2>/dev/null || echo "NOT_FOUND")
@@ -66,7 +67,7 @@ if [ "$STATE" = "NOT_FOUND" ]; then
   exit 1
 elif [ "$STATE" != "STATE_RUNNING" ]; then
   echo "ERROR: Workstation '$WORKSTATION' is not running (current state: $STATE)."
-  echo "Please start it first: gcloud workstations start $WORKSTATION --cluster=$CLUSTER --region=$REGION --project=$PROJECT_ID"
+  echo "Please start it first: gcloud workstations start $WORKSTATION --cluster=$CLUSTER --config=$CONFIG --region=$REGION --project=$PROJECT_ID"
   exit 1
 fi
 log "Workstation is RUNNING."
@@ -292,9 +293,13 @@ echo " Deployment completed successfully!"
 echo "============================================="
 echo ""
 echo " To complete the setup, restart your workstation to trigger boot scripts:"
-echo "   gcloud workstations stop $WORKSTATION --cluster=$CLUSTER --region=$REGION --project=$PROJECT_ID"
-echo "   gcloud workstations start $WORKSTATION --cluster=$CLUSTER --region=$REGION --project=$PROJECT_ID"
+echo "   gcloud workstations stop $WORKSTATION --cluster=$CLUSTER --config=$CONFIG --region=$REGION --project=$PROJECT_ID"
+echo "   gcloud workstations start $WORKSTATION --cluster=$CLUSTER --config=$CONFIG --region=$REGION --project=$PROJECT_ID"
 echo ""
 echo " Once started, connect via the browser URL or run:"
-echo "   gcloud workstations ssh $WORKSTATION --cluster=$CLUSTER --region=$REGION --project=$PROJECT_ID"
+echo "   gcloud workstations ssh $WORKSTATION \\"
+echo "    --cluster=$CLUSTER \\"
+echo "    --config=$CONFIG \\"
+echo "    --region=$REGION \\"
+echo "    --project=$PROJECT_ID"
 echo "============================================="

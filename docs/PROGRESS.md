@@ -329,3 +329,43 @@ Milestone 1: Initial Setup
 ### Next Steps
 - PO merges PR and tags release v1.3.0.
 - Existing Terraform users must `terraform state mv` resources to new names if they have existing state.
+
+## Session 11 — 2026-07-01 (F-0012: Isolated E2E Environment & Script Hardening)
+
+### Date
+2026-07-01
+
+### Milestone
+Milestone 1: Initial Setup
+
+### Completed
+- **F-0012** (Isolated E2E Testing Environment):
+  - Created product spec `docs/specs/F-0012-isolated-e2e-env.md`.
+  - Added new project definition `prj-d-ws-e2e-01-j68o` to `markjkelly-argolis-repo/foundation/4-projects` to provide a truly isolated environment for E2E testing.
+  - Opened PR #764 in `markjkelly-argolis-repo` for project creation.
+  - **Hardened Teardown Logic (`scripts/ws.sh`)**:
+    - Added `--include-cluster` flag; clusters are now protected from deletion by default.
+    - Implemented a safety check to skip cluster deletion if other workstation configurations exist.
+    - Refined persistent disk deletion to surgically target ONLY disks labeled with the specific `workstation_id` being torn down.
+  - Successfully performed a surgical teardown in `prj-c-workstations-j68o`:
+    - Deleted the corrupted persistent disk for `gcp-dev-cloud-workstation`.
+    - Preserved the shared cluster, NAT, and Router used by other workstations (`sway-workstation`, `my-workstation`).
+  - Updated `docs/BACKLOG.md` with F-0011 and F-0012.
+
+### Files Changed
+- `scripts/ws.sh` (Hardened)
+- `docs/specs/F-0012-isolated-e2e-env.md` (New spec)
+- `docs/BACKLOG.md` (Updated)
+- `docs/PROGRESS.md` (This file)
+- `markjkelly-argolis-repo:foundation/4-projects/envs/development/main.tf`
+- `markjkelly-argolis-repo:foundation/4-projects/envs/development/outputs.tf`
+
+### Decisions
+- **Isolation over Shared Infrastructure**: Decided to pivot to a dedicated project for E2E tests to avoid "near-miss" scenarios where shared infrastructure (NAT, Clusters) could be accidentally deleted.
+- **Explicit Opt-in for Cluster Deletion**: Changed `ws.sh` teardown behavior to require `--include-cluster`, protecting multi-tenant clusters.
+- **Label-based Disk Filtering**: Switched from name-based to label-based (`labels.workstation_id`) disk filtering to ensure surgical precision during cleanup.
+
+### Next Steps
+- Wait for `prj-d-ws-e2e-01-j68o` project creation (via `markjkelly-argolis-repo` PR merge/apply).
+- Rerun full E2E setup in the new isolated project.
+- Decommission `prj-b-net-interconnect-2p82` (F-0011).

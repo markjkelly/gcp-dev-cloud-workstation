@@ -26,9 +26,9 @@ if [[ "$REPO_URL" == git@github.com:* ]]; then
     REPO_URL="https://github.com/${REPO_URL#git@github.com:}"
 fi
 
-CLUSTER="workstation-cluster"
-CONFIG="ws-config"
-WORKSTATION="dev-workstation"
+CLUSTER="main-cluster"
+CONFIG="gcp-dev-cloud-workstation-config"
+WORKSTATION="gcp-dev-cloud-workstation"
 AR_REPO="workstation-images"
 
 usage() {
@@ -44,9 +44,9 @@ usage() {
     echo "  -p, --project PROJECT_ID    GCP project ID"
     echo ""
     echo "Optional Resources (Custom Naming):"
-    echo "  -c, --cluster CLUSTER       Cluster name (default: workstation-cluster)"
-    echo "  -f, --config CONFIG         Config name (default: ws-config)"
-    echo "  --workstation NAME          Workstation name (default: dev-workstation)"
+    echo "  -c, --cluster CLUSTER       Cluster name (default: main-cluster)"
+    echo "  -f, --config CONFIG         Config name (default: gcp-dev-cloud-workstation-config)"
+    echo "  --workstation NAME          Workstation name (default: gcp-dev-cloud-workstation)"
     echo ""
     echo "Optional:"
     echo "  --profile PROFILE           Install profile: minimal, dev, ai, full (default: full)"

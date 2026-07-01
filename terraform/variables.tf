@@ -12,19 +12,19 @@ variable "region" {
 variable "cluster_id" {
   description = "The ID of the Cloud Workstation Cluster."
   type        = string
-  default     = "workstation-cluster"
+  default     = "main-cluster"
 }
 
 variable "workstation_config_id" {
   description = "The ID of the Cloud Workstation Configuration."
   type        = string
-  default     = "ws-config"
+  default     = "gcp-dev-cloud-workstation-config"
 }
 
 variable "workstation_id" {
   description = "The ID of the Cloud Workstation instance."
   type        = string
-  default     = "dev-workstation"
+  default     = "gcp-dev-cloud-workstation"
 }
 
 variable "machine_type" {

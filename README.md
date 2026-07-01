@@ -11,7 +11,7 @@ Cloud Workstation in GCP with Sway desktop, Nix package manager, and a dev envir
 
 ## Setup Paths
 
-Both setup paths target `workstation-cluster`/`ws-config`/`dev-workstation` by default. These can be overridden using the naming flags described in the [Custom Naming](#custom-naming) section.
+Both setup paths target `main-cluster`/`gcp-dev-cloud-workstation-config`/`gcp-dev-cloud-workstation` by default. These can be overridden using the naming flags described in the [Custom Naming](#custom-naming) section.
 
 ### Path A: Fully Automated (`ws.sh setup`) — Recommended for CI/CD
 
@@ -44,17 +44,17 @@ If you want to use a custom naming scheme (e.g., `gcp-dev-cloud-workstation`), u
 **Path A (`ws.sh`):**
 ```bash
 bash scripts/ws.sh setup -p YOUR_PROJECT_ID \
-  --cluster workstation-cluster \
-  --config ws-config \
-  --workstation dev-workstation
+  --cluster main-cluster \
+  --config gcp-dev-cloud-workstation-config \
+  --workstation gcp-dev-cloud-workstation
 ```
 
 **Path B (`deploy-configs.sh`):**
 ```bash
 bash scripts/deploy-configs.sh -p YOUR_PROJECT_ID \
-  -c workstation-cluster \
-  -f ws-config \
-  -w dev-workstation
+  -c main-cluster \
+  -f gcp-dev-cloud-workstation-config \
+  -w gcp-dev-cloud-workstation
 ```
 
 If using Terraform (Path B), ensure you pass the matching variables:
@@ -131,8 +131,8 @@ terraform apply -var="project_id=YOUR_PROJECT_ID"
 Start the workstation if it's not already running:
 
 ```bash
-gcloud workstations start dev-workstation \
-  --cluster=workstation-cluster \
+gcloud workstations start gcp-dev-cloud-workstation \
+  --cluster=main-cluster \
   --region=us-central1 \
   --project=YOUR_PROJECT_ID
 ```
@@ -149,8 +149,8 @@ bash scripts/deploy-configs.sh -p YOUR_PROJECT_ID
 Stop and start your workstation to trigger the persistent boot scripts (which mount `/nix`, start the Sway desktop, and configure the desktop environment):
 
 ```bash
-gcloud workstations stop dev-workstation --cluster=workstation-cluster --region=us-central1 --project=YOUR_PROJECT_ID
-gcloud workstations start dev-workstation --cluster=workstation-cluster --region=us-central1 --project=YOUR_PROJECT_ID
+gcloud workstations stop gcp-dev-cloud-workstation --cluster=main-cluster --region=us-central1 --project=YOUR_PROJECT_ID
+gcloud workstations start gcp-dev-cloud-workstation --cluster=main-cluster --region=us-central1 --project=YOUR_PROJECT_ID
 ```
 
 ### Step 7: Configure Chrome Remote Desktop (CRD)
@@ -159,7 +159,7 @@ To connect to your Sway desktop session, you must authorize and link the worksta
 
 1. SSH into the workstation:
    ```bash
-   gcloud workstations ssh sway-workstation \
+   gcloud workstations ssh gcp-dev-cloud-workstation \
      --cluster=main-cluster \
      --region=us-central1 \
      --project=YOUR_PROJECT_ID
@@ -192,8 +192,8 @@ Once configured, access your workstation remotely:
 The setup script stops the workstation at the end to save costs. Start it when you're ready:
 
 ```bash
-gcloud workstations start sway-workstation \
-  --config=sway-config \
+gcloud workstations start gcp-dev-cloud-workstation \
+  --config=gcp-dev-cloud-workstation-config \
   --cluster=main-cluster \
   --region=us-central1 \
   --project=YOUR_PROJECT_ID
@@ -204,8 +204,8 @@ gcloud workstations start sway-workstation \
 Get the workstation URL:
 
 ```bash
-gcloud workstations describe sway-workstation \
-  --config=sway-config \
+gcloud workstations describe gcp-dev-cloud-workstation \
+  --config=gcp-dev-cloud-workstation-config \
   --cluster=main-cluster \
   --region=us-central1 \
   --project=YOUR_PROJECT_ID \

@@ -54,6 +54,7 @@ usage() {
     echo "  -w, --webhook URL           Google Chat / Slack webhook for notifications"
     echo "  -e, --email EMAIL           Email address for notifications"
     echo "  -y, --yes                   Skip confirmation (teardown only)"
+    echo "  --include-cluster           Also delete the cluster (teardown only)"
     exit 1
 }
 
@@ -79,6 +80,7 @@ EMAIL=""
 PROFILE="full"
 CUSTOM_MODULES=""
 SKIP_CONFIRM=false
+INCLUDE_CLUSTER=false
 while [[ $# -gt 0 ]]; do
     case $1 in
         -p|--project)     PROJECT_ID="$2"; shift 2 ;;
@@ -90,6 +92,7 @@ while [[ $# -gt 0 ]]; do
         -w|--webhook)     WEBHOOK_URL="$2"; shift 2 ;;
         -e|--email)       EMAIL="$2"; shift 2 ;;
         -y|--yes)         SKIP_CONFIRM=true; shift ;;
+        --include-cluster) INCLUDE_CLUSTER=true; shift ;;
         -h|--help)        usage ;;
         *) echo "Unknown option: $1"; usage ;;
     esac
@@ -461,20 +464,30 @@ elif [ "$COMMAND" = "teardown" ]; then
         log "  Workstations API not enabled — skipping"
     fi
 
-    # 3. Delete Cluster (can take 5-10 minutes)
-    log "Deleting cluster (5-10 minutes)..."
-    if api_enabled "workstations.googleapis.com"; then
-        if gcloud_timeout 30 gcloud workstations clusters describe "$CLUSTER" \
-            --region="$REGION" --project="$PROJECT_ID" >/dev/null 2>&1; then
-            gcloud_timeout 900 gcloud workstations clusters delete "$CLUSTER" \
-                --region="$REGION" --project="$PROJECT_ID" --quiet || log "  WARN: delete may have timed out"
-            log "  Deleted"
-            wait_deleted "gcloud_timeout 15 gcloud workstations clusters describe $CLUSTER --region=$REGION --project=$PROJECT_ID" "cluster" 900
+    # 3. Delete Cluster (only if --include-cluster is passed)
+    if [ "$INCLUDE_CLUSTER" = true ]; then
+        log "Deleting cluster (5-10 minutes)..."
+        if api_enabled "workstations.googleapis.com"; then
+            # Check for other configs first
+            OTHER_CONFIGS=$(gcloud workstations configs list --cluster="$CLUSTER" --region="$REGION" --project="$PROJECT_ID" --format="value(name)" | grep -v "^$CONFIG$" || true)
+            if [ -z "$OTHER_CONFIGS" ]; then
+                if gcloud_timeout 30 gcloud workstations clusters describe "$CLUSTER" \
+                    --region="$REGION" --project="$PROJECT_ID" >/dev/null 2>&1; then
+                    gcloud_timeout 900 gcloud workstations clusters delete "$CLUSTER" \
+                        --region="$REGION" --project="$PROJECT_ID" --quiet || log "  WARN: delete may have timed out"
+                    log "  Deleted"
+                    wait_deleted "gcloud_timeout 15 gcloud workstations clusters describe $CLUSTER --region=$REGION --project=$PROJECT_ID" "cluster" 900
+                else
+                    log "  Not found — skipping"
+                fi
+            else
+                log "  Skipping cluster deletion: other configurations exist ($OTHER_CONFIGS)"
+            fi
         else
-            log "  Not found — skipping"
+            log "  Workstations API not enabled — skipping"
         fi
     else
-        log "  Workstations API not enabled — skipping"
+        log "  Skipping cluster deletion (use --include-cluster to delete)"
     fi
 
     # 4. Delete Artifact Registry
@@ -589,6 +602,25 @@ elif [ "$COMMAND" = "teardown" ]; then
         log "  Cloud Build API not enabled — skipping"
     fi
 
+    # 10. Delete Persistent Disks (to ensure fresh start)
+    log "Deleting persistent home disks..."
+    DISK_LIST=$(gcloud compute disks list \
+        --project="$PROJECT_ID" \
+        --filter="labels.workstation_id=$WORKSTATION AND zone:$REGION-*" \
+        --format="value(name,zone.scope(zones))" --quiet 2>/dev/null || true)
+    
+    if [ -n "$DISK_LIST" ]; then
+        echo "$DISK_LIST" | while read -r DISK ZONE; do
+            [ -z "$DISK" ] && continue
+            log "  Deleting disk: $DISK ($ZONE)"
+            gcloud_timeout 60 gcloud compute disks delete "$DISK" \
+                --zone="$ZONE" --project="$PROJECT_ID" --quiet || log "  WARN: disk delete failed"
+        done
+        log "  Persistent disks deleted"
+    else
+        log "  No persistent disks found"
+    fi
+
     echo ""
     echo "============================================="
     echo " Teardown complete!"
@@ -598,5 +630,5 @@ elif [ "$COMMAND" = "teardown" ]; then
     echo " To set up again: bash scripts/ws.sh setup -p $PROJECT_ID"
     echo "============================================="
 
-    notify_all "Teardown Complete" "Project: ${PROJECT_ID}" "All Cloud Workstation resources deleted."
+    notify_all "Teardown Complete" "Project: ${PROJECT_ID}" "All Cloud Workstation resources and disks deleted."
 fi

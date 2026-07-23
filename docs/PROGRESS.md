@@ -406,7 +406,7 @@ Milestone 1: Initial Setup
 - **Feedback Requirements**:
   - Updated introductory paragraph of `README.md` to clearly highlight WHY developers should use this environment over standard cloud instances.
   - Explicitly detailed key out-of-the-box (OOTB) capabilities: pre-configured Sway (Wayland) tiling desktop, durable Nix store persistence across container rebuilds, Antigravity Hub integration, the `agy` CLI, and pre-installed VS Code.
-  - Re-positioned the "What's Included" section higher up in `README.md` directly after "How It Works" and before "Quick Start" so users can inspect OOTB technical specs earlier.
+  - Re-ordered `README.md` to shift the entire "What's Included" section (including technical components table) to be positioned immediately below the main introductory paragraph, placing it ABOVE the "How It Works" section for instant visibility of environment specs.
   - Updated `docs/specs/F-0013-beautify-readme.md` with feedback acceptance criteria.
   - Validated that `README.md` passes `audit_readme.py` with zero errors/warnings and verified all 10-tests.sh assertions pass.
 

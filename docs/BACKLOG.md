@@ -35,5 +35,7 @@
 | F-0012 | Isolated E2E Testing Environment | docs/specs/F-0012-isolated-e2e-env.md | P0 | in-progress | SWE | feature/isolated-e2e-env | F-0010 | Create dedicated GCP project for safe E2E testing |
 | F-0013 | Beautify README | docs/specs/F-0013-beautify-readme.md | P1 | done | SWE | feature/beautify-readme | — | High-contrast Tokyo Night SVG hero, structured README hierarchy, audit checks & boot tests |
 | F-0014 | Antigravity Hub Documentation in README | docs/specs/F-0014-readme-hub-docs.md | P1 | done | SWE | feature/readme-hub-docs | F-0003 | Document preinstalled Antigravity Hub, hub-restart utility, Wayland display rationale, and ws5 mapping in README |
+| F-0015 | Environment and Identity Configuration via Git-ignored .env file | docs/specs/F-0015-env-identity-config.md | P1 | backlog | — | — | F-0010 | Single source of truth .env configuration with explicit variables and fail-fast abort rules |
+
 
 

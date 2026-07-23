@@ -20,6 +20,7 @@ The repository README lacks visual polish and a cohesive design system matching 
    - Right section: Container bootstrap workflow diagram (Nix Persist -> Services -> Boot Scripts -> 190+ Tests passing).
 2. **Redesign README.md:**
    - Center hero SVG at top of README.
+   - Craft a compelling introductory paragraph highlighting WHY users should choose this environment over standard cloud instances, detailing out-of-the-box (OOTB) capabilities: pre-configured Sway (Wayland) tiling desktop, Nix persistence across container rebuilds, Antigravity Hub, `agy` CLI, and pre-installed VS Code.
    - Restructure sections: Overview/Description, How It Works, Quick Start, Keyboard Shortcuts (table), Included Architecture/Tools (table), Language Version Management, Automated Boot Tests, Troubleshooting, Teardown.
    - Ensure `python3 /home/user/.gemini/config/skills/beautify-github-readme/scripts/audit_readme.py` passes all checks.
 3. **Automated Boot Tests:**
@@ -32,6 +33,7 @@ The repository README lacks visual polish and a cohesive design system matching 
 ## Acceptance Criteria
 
 - [ ] `assets/readme/hero.svg` is authored with solid dark background fill (`#1a1b26`) and technical Tokyo Night styling.
+- [ ] `README.md` introductory paragraph highlights OOTB value proposition (Sway, Nix persistence, Antigravity Hub, `agy` CLI, VS Code).
 - [ ] `README.md` embeds hero image and features updated structure, tables, and commands.
 - [ ] `python3 /home/user/.gemini/config/skills/beautify-github-readme/scripts/audit_readme.py` passes with zero errors/warnings.
 - [ ] `workstation-image/boot/10-tests.sh` includes test checks for `hero.svg` and README embed.

@@ -4,7 +4,7 @@
 
 # GCP Cloud Workstation
 
-A high-performance, persistent developer environment on Google Cloud Platform featuring a Sway (Wayland) tiling desktop, Nix package manager, custom shell and multiplexer environments, and integrated AI developer tooling. Accessible seamlessly via browser or Chrome Remote Desktop.
+A high-performance, turn-key cloud development workspace designed to eliminate local environment drift and manual machine setup. Unlike standard cloud VMs or default cloud workstations, this environment delivers immediate out-of-the-box (OOTB) productivity on Google Cloud Platform—pre-configured with a low-latency Sway (Wayland) tiling desktop, durable Nix store persistence across container rebuilds, Antigravity Hub integration, the `agy` CLI, and pre-installed VS Code. Seamlessly accessible via web browser or Chrome Remote Desktop, it comes equipped with 190+ automated boot health verification tests and fully tuned developer tooling ready from first boot.
 
 ---
 
@@ -24,6 +24,23 @@ On every workstation boot, the system executes an automated sequence of numbered
 8. **Workspace Auto-Launch (`08-workspaces.sh`):** Automatically initializes workspace layouts (Antigravity IDE on WS1, VS Code on WS2, Terminal on WS3, Chrome on WS4).
 9. **Configuration Sync (`09-sync.sh`):** Synchronizes boot scripts and Sway configurations directly from git on boot.
 10. **Environment Health Verification (`10-tests.sh`):** Runs 190+ automated integration tests to ensure workspace health.
+
+---
+
+## What's Included
+
+| Component | Technical Details |
+|:---|:---|
+| **Compute Machine** | `n2-standard-8` (8 vCPU, 32 GB RAM) on GCP Cloud Workstations |
+| **Storage & Persistence** | 250 GB Persistent SSD mounted at `/home/user` (survives container teardown & rebuilds) |
+| **Desktop Environment** | Headless Sway (Wayland) with Tokyo Night theme, accessible via Browser & Chrome Remote Desktop |
+| **Terminal & Shell** | `foot` terminal, Zsh shell, Starship prompt, crash-resistant tmux multiplexer |
+| **Typography & Fonts** | JetBrains Mono, Fira Code, Cascadia Code, DejaVu Sans Mono |
+| **Development Runtimes** | Go (latest), Rust (`rustup`), Python 3.12 (`pyenv`), Ruby 3.3 (`rbenv`), Node.js 22 (Nix) |
+| **Editors & IDEs** | Antigravity IDE, VS Code, Neovim (Tokyo Night pre-configured) |
+| **AI Developer Tools** | Antigravity CLI |
+| **System Tools** | `ripgrep`, `fd`, `jq`, `ffmpeg`, `wofi`, `thunar`, `clipman` |
+| **Health Verification** | 190+ automated integration tests executed on every system startup |
 
 ---
 
@@ -172,23 +189,6 @@ All Sway desktop navigation shortcuts use `CTRL+SHIFT` as the modifier key to en
 | `CTRL+SHIFT+,` / `CTRL+SHIFT+.` | Grow / Shrink Window Width |
 | `CTRL+SHIFT+-` / `CTRL+SHIFT+=` | Shrink / Grow Window Height |
 | `CTRL+SHIFT+Escape` | Exit Sway Desktop Session |
-
----
-
-## What's Included
-
-| Component | Technical Details |
-|:---|:---|
-| **Compute Machine** | `n2-standard-8` (8 vCPU, 32 GB RAM) on GCP Cloud Workstations |
-| **Storage & Persistence** | 250 GB Persistent SSD mounted at `/home/user` (survives container teardown & rebuilds) |
-| **Desktop Environment** | Headless Sway (Wayland) with Tokyo Night theme, accessible via Browser & Chrome Remote Desktop |
-| **Terminal & Shell** | `foot` terminal, Zsh shell, Starship prompt, crash-resistant tmux multiplexer |
-| **Typography & Fonts** | JetBrains Mono, Fira Code, Cascadia Code, DejaVu Sans Mono |
-| **Development Runtimes** | Go (latest), Rust (`rustup`), Python 3.12 (`pyenv`), Ruby 3.3 (`rbenv`), Node.js 22 (Nix) |
-| **Editors & IDEs** | Antigravity IDE, VS Code, Neovim (Tokyo Night pre-configured) |
-| **AI Developer Tools** | Antigravity CLI |
-| **System Tools** | `ripgrep`, `fd`, `jq`, `ffmpeg`, `wofi`, `thunar`, `clipman` |
-| **Health Verification** | 190+ automated integration tests executed on every system startup |
 
 ---
 

@@ -402,3 +402,11 @@ Milestone 1: Initial Setup
 ### Next Steps
 - PO review and manual PR merge.
 
+### Feedback Integration — 2026-07-23 (F-0013: Introductory Paragraph & Section Layout Enhancement)
+- **Feedback Requirements**:
+  - Updated introductory paragraph of `README.md` to clearly highlight WHY developers should use this environment over standard cloud instances.
+  - Explicitly detailed key out-of-the-box (OOTB) capabilities: pre-configured Sway (Wayland) tiling desktop, durable Nix store persistence across container rebuilds, Antigravity Hub integration, the `agy` CLI, and pre-installed VS Code.
+  - Re-positioned the "What's Included" section higher up in `README.md` directly after "How It Works" and before "Quick Start" so users can inspect OOTB technical specs earlier.
+  - Updated `docs/specs/F-0013-beautify-readme.md` with feedback acceptance criteria.
+  - Validated that `README.md` passes `audit_readme.py` with zero errors/warnings and verified all 10-tests.sh assertions pass.
+

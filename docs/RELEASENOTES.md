@@ -9,6 +9,8 @@
 
 ### Changed
 - **README Redesign** — Re-architected `README.md` structure with centered hero SVG, detailed bootstrap pipeline breakdown, Path A / Path B quick start instructions, Sway keyboard shortcuts table, architecture overview table, language version management details, boot test verification guide, and teardown instructions.
+- **Value Proposition & OOTB Focus** — Updated the introductory paragraph of `README.md` to clearly answer WHY users should choose this environment over standard cloud VMs, explicitly detailing out-of-the-box (OOTB) capabilities: pre-configured Sway (Wayland) tiling desktop, Nix store persistence, Antigravity Hub, `agy` CLI, and pre-installed VS Code.
+- **Optimized Section Placement** — Re-ordered `README.md` to place "What's Included" directly after "How It Works" and before "Quick Start" for fast technical component discovery.
 
 ## v1.3.0 — Align Terraform and Setup Script for Full E2E Coverage (2026-06-30)
 

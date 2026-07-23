@@ -369,3 +369,36 @@ Milestone 1: Initial Setup
 - Wait for `prj-d-ws-e2e-01-j68o` project creation (via `markjkelly-argolis-repo` PR merge/apply).
 - Rerun full E2E setup in the new isolated project.
 - Decommission `prj-b-net-interconnect-2p82` (F-0011).
+
+## Session 12 — 2026-07-23 (F-0013: Beautify README)
+
+### Date
+2026-07-23
+
+### Milestone
+Milestone 1: Initial Setup
+
+### Completed
+- **F-0013** (Beautify README):
+  - Hand-authored high-contrast SVG hero asset `assets/readme/hero.svg` (1200x380 viewport) following the Tokyo Night color palette and technical design system. Included a solid background fill (`#1a1b26`) to ensure seamless rendering across dark and light GitHub UI modes.
+  - Redesigned `README.md` with centered hero SVG embed (`<img src="./assets/readme/hero.svg" width="100%">`).
+  - Re-architected documentation layout into clear sequential sections: Brief Overview, How It Works (bootstrap pipeline), Quick Start (Path A vs Path B), Desktop Access & CRD setup, Keyboard Shortcuts table, What's Included table, Language Version Management, Boot Tests, Troubleshooting, and Teardown.
+  - Ran `audit_readme.py` validation tool to verify image targets, SVG viewBox, `<title>` tags, and alt attributes. All checks passed with 0 errors/warnings.
+  - Updated `workstation-image/boot/10-tests.sh` with integration tests verifying `hero.svg` existence and `README.md` embed link. Ran full test suite (PASS: 166, including F-0013 checks).
+
+### Files Changed
+- `assets/readme/hero.svg`
+- `README.md`
+- `workstation-image/boot/10-tests.sh`
+- `docs/specs/F-0013-beautify-readme.md`
+- `docs/BACKLOG.md`
+- `docs/PROGRESS.md`
+- `docs/RELEASENOTES.md`
+
+### Decisions
+- Adopted dark Tokyo Night background fill (`#1a1b26`) for hero SVG so vector typography and container schematic remain readable on all GitHub background themes.
+- Kept command execution, shortcut tables, and technical specs inside Markdown while using SVG exclusively for visual branding and bootstrap architecture flow.
+
+### Next Steps
+- PO review and manual PR merge.
+

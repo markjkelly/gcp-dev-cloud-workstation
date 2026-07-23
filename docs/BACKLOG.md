@@ -33,3 +33,6 @@
 | F-0010 | Align Terraform and Setup Script for Full E2E Coverage | docs/specs/F-0010-align-terraform-setup.md | P1 | done | SWE | feature/align-terraform-setup | F-0002 | Terraform defaults aligned to test workstation, sway_* resources renamed to generic, API enablement added, snapshot policy in setup script, both setup paths documented. QA: terraform validate + plan confirmed. |
 | F-0011 | Decommission Interconnect Project | — | P1 | backlog | — | — | — | Decommission prj-b-net-interconnect-2p82 |
 | F-0012 | Isolated E2E Testing Environment | docs/specs/F-0012-isolated-e2e-env.md | P0 | in-progress | SWE | feature/isolated-e2e-env | F-0010 | Create dedicated GCP project for safe E2E testing |
+| F-0013 | Beautify README | docs/specs/F-0013-beautify-readme.md | P1 | done | SWE | feature/beautify-readme | — | High-contrast Tokyo Night SVG hero, structured README hierarchy, audit checks & boot tests |
+
+

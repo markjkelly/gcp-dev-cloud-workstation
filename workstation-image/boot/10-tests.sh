@@ -1543,8 +1543,22 @@ check_file "F-0140: Antigravity Hub desktop entry" "$HOME_DIR/.local/share/appli
 check_file "F-0140: Antigravity Hub tray icon" "$HOME_DIR/.local/share/antigravity-hub/icon.png"
 
 # =============================================================================
+# F-0013: Beautify README Hero & Embed Checks
+# =============================================================================
+log ""
+log "--- F-0013: Beautify README ---"
+REPO_DIR_F0013="$HOME_DIR/dev/git/gcp-dev-cloud-workstation"
+if [ -d "$REPO_DIR_F0013" ]; then
+    check_file "F-0013: README hero SVG exists" "$REPO_DIR_F0013/assets/readme/hero.svg"
+    check_grep "F-0013: README embeds hero SVG" "./assets/readme/hero.svg" "$REPO_DIR_F0013/README.md"
+else
+    test_skip "F-0013: repository directory missing ($REPO_DIR_F0013)"
+fi
+
+# =============================================================================
 # Summary
 # =============================================================================
+
 TOTAL=$((PASS+FAIL+WARN+SKIP))
 log ""
 log "========================================"

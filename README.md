@@ -248,3 +248,8 @@ bash scripts/ws.sh teardown -p YOUR_PROJECT_ID -y
 Provided under the [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) license. See the [LICENSE](./LICENSE.txt) file.
 
 *This is not an officially supported Google product, nor is it part of an official Google product.*
+
+## Acknowledgments
+
+This project is an independent standalone repository based on the original work by [ameer00](https://github.com/ameer00) - [cloud-workstations](https://github.com/ameer00/cloud-workstations).
+

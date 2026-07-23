@@ -243,6 +243,8 @@ bash scripts/ws.sh teardown -p YOUR_PROJECT_ID -y
 
 ---
 
-## License & Attribution
+## License
 
-Designed and maintained for GCP Cloud Workstations development.
+Provided under the [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) license. See the [LICENSE](./LICENSE.txt) file.
+
+*This is not an officially supported Google product, nor is it part of an official Google product.*

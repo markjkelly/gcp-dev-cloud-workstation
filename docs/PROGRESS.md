@@ -410,3 +410,39 @@ Milestone 1: Initial Setup
   - Updated `docs/specs/F-0013-beautify-readme.md` with feedback acceptance criteria.
   - Validated that `README.md` passes `audit_readme.py` with zero errors/warnings and verified all 10-tests.sh assertions pass.
 
+## Session 13 — 2026-07-23 (F-0014: Antigravity Hub Documentation in README)
+
+### Date
+2026-07-23
+
+### Milestone
+Milestone 1: Initial Setup
+
+### Completed
+- **F-0014** (Antigravity Hub Documentation in README):
+  - Created product spec `docs/specs/F-0014-readme-hub-docs.md`.
+  - Updated `README.md` introductory paragraph to change "Antigravity Hub integration" to "Antigravity Hub", emphasizing its preinstalled out-of-the-box presence.
+  - Updated "What's Included" table under "AI Developer Tools" to list "Antigravity Hub, Antigravity CLI".
+  - Added new `### Antigravity Hub (hub-restart)` subsection under `Desktop & Workspace Access` detailing:
+    - Rationale for not auto-launching Hub on boot (prevents blank-screen rendering failures before user session/display active).
+    - Execution instructions to launch Hub via Workspace 3 terminal using `hub-restart`.
+    - Detailed `hub-restart` workflow: process termination, singleton lock clearing, Wayland display relaunch (`DISPLAY=:20`), and Workspace 5 (`ws5`) window placement and display focus.
+  - Validated `README.md` with `python3 /home/user/.gemini/config/skills/beautify-github-readme/scripts/audit_readme.py`: zero errors/warnings.
+  - Updated `workstation-image/boot/10-tests.sh` to include a test checking for `hub-restart` in `README.md`.
+  - Executed `10-tests.sh` verifying all boot integration tests pass cleanly (PASS: 167 including F-0014 check).
+
+### Files Changed
+- `docs/specs/F-0014-readme-hub-docs.md`
+- `docs/BACKLOG.md`
+- `README.md`
+- `workstation-image/boot/10-tests.sh`
+- `docs/PROGRESS.md`
+- `docs/RELEASENOTES.md`
+
+### Decisions
+- Positioned `Antigravity Hub (hub-restart)` as a dedicated subsection under `Desktop & Workspace Access` directly following `Chrome Remote Desktop (CRD) Setup` to provide logical user flow when accessing the desktop environment.
+- Documented process lifetime management (lock removal, Wayland environment setup, and workspace focus) to ensure users understand how `hub-restart` resolves display context issues.
+
+### Next Steps
+- PO review and manual PR merge.
+

@@ -1,5 +1,15 @@
 # Release Notes — Cloud Workstation
 
+## v1.3.2 — Antigravity Hub Documentation in README (2026-07-23)
+
+### Added
+- **Antigravity Hub Subsection** — Added `### Antigravity Hub (hub-restart)` subsection under `Desktop & Workspace Access` in `README.md` explaining the rationale for not auto-launching on boot, step-by-step usage of `hub-restart` from Workspace 3 terminal, and process lifecycle management (process termination, singleton lock clearing, Wayland display attachment on `:20`, and automatic placement onto Workspace 5 with display focus).
+- **Boot Test Verification** — Added test check in `10-tests.sh` verifying that `README.md` references the `hub-restart` command.
+
+### Changed
+- **Out-of-the-Box Antigravity Hub Highlight** — Updated `README.md` introductory paragraph to change "Antigravity Hub integration" to "Antigravity Hub", emphasizing its preinstalled OOTB presence.
+- **What's Included Table Update** — Updated "AI Developer Tools" in `README.md` to explicitly list "Antigravity Hub, Antigravity CLI".
+
 ## v1.3.1 — Beautify README (2026-07-23)
 
 ### Added

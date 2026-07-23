@@ -1556,6 +1556,18 @@ else
 fi
 
 # =============================================================================
+# F-0014: Antigravity Hub README Documentation Checks
+# =============================================================================
+log ""
+log "--- F-0014: Antigravity Hub README Documentation ---"
+REPO_DIR_F0014="$HOME_DIR/dev/git/gcp-dev-cloud-workstation"
+if [ -d "$REPO_DIR_F0014" ]; then
+    check_grep "F-0014: README references hub-restart command" "hub-restart" "$REPO_DIR_F0014/README.md"
+else
+    test_skip "F-0014: repository directory missing ($REPO_DIR_F0014)"
+fi
+
+# =============================================================================
 # Summary
 # =============================================================================
 

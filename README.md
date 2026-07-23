@@ -4,7 +4,7 @@
 
 # GCP Cloud Workstation
 
-A high-performance, turn-key cloud development workspace designed to eliminate local environment drift and manual machine setup. Unlike standard cloud VMs or default cloud workstations, this environment delivers immediate out-of-the-box (OOTB) productivity on Google Cloud Platform—pre-configured with a low-latency Sway (Wayland) tiling desktop, durable Nix store persistence across container rebuilds, Antigravity Hub integration, the `agy` CLI, and pre-installed VS Code. Seamlessly accessible via web browser or Chrome Remote Desktop, it comes equipped with 190+ automated boot health verification tests and fully tuned developer tooling ready from first boot.
+A high-performance, turn-key cloud development workspace designed to eliminate local environment drift and manual machine setup. Unlike standard cloud VMs or default cloud workstations, this environment delivers immediate out-of-the-box (OOTB) productivity on Google Cloud Platform—pre-configured with a low-latency Sway (Wayland) tiling desktop, durable Nix store persistence across container rebuilds, Antigravity Hub, the `agy` CLI, and pre-installed VS Code. Seamlessly accessible via web browser or Chrome Remote Desktop, it comes equipped with 190+ automated boot health verification tests and fully tuned developer tooling ready from first boot.
 
 ---
 
@@ -19,7 +19,7 @@ A high-performance, turn-key cloud development workspace designed to eliminate l
 | **Typography & Fonts** | JetBrains Mono, Fira Code, Cascadia Code, DejaVu Sans Mono |
 | **Development Runtimes** | Go (latest), Rust (`rustup`), Python 3.12 (`pyenv`), Ruby 3.3 (`rbenv`), Node.js 22 (Nix) |
 | **Editors & IDEs** | Antigravity IDE, VS Code, Neovim (Tokyo Night pre-configured) |
-| **AI Developer Tools** | Antigravity CLI |
+| **AI Developer Tools** | Antigravity Hub, Antigravity CLI |
 | **System Tools** | `ripgrep`, `fd`, `jq`, `ffmpeg`, `wofi`, `thunar`, `clipman` |
 | **Health Verification** | 190+ automated integration tests executed on every system startup |
 
@@ -162,6 +162,24 @@ For high-framerate remote desktop access:
    ```bash
    crd-resize 2560 1440
    ```
+
+### Antigravity Hub (hub-restart)
+
+The Antigravity Hub desktop application is pre-installed out-of-the-box, but it is deliberately not auto-launched on system boot to prevent blank-screen rendering failures before an active user session and X11/Wayland display environment are fully established.
+
+To start the Hub once connected via Chrome Remote Desktop:
+
+1. Switch to Workspace 3 (terminal).
+2. Execute the launcher command:
+   ```bash
+   hub-restart
+   ```
+
+What `hub-restart` does:
+- **Terminates stuck processes:** Kills any hanging or stuck Hub processes.
+- **Clears singleton locks:** Clears stale singleton locks to enable a clean application start.
+- **Relaunches in Wayland session:** Spawns Antigravity Hub inside the active Wayland display session (`DISPLAY=:20`).
+- **Focuses Workspace 5:** Automatically places the Hub window onto Workspace 5 (`ws5`) and sets display focus directly to Workspace 5.
 
 ---
 

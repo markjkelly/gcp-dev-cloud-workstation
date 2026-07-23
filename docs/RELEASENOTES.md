@@ -1,6 +1,19 @@
 # Release Notes — Cloud Workstation
 
+## v1.3.1 — Beautify README (2026-07-23)
+
+### Added
+- **Tokyo Night Hero SVG** — Created `assets/readme/hero.svg` (1200x380 SVG viewBox) featuring Tokyo Night color palette, solid dark `#1a1b26` background fill, and a container bootstrap workflow schematic.
+- **Audit Compliance** — Added `<title>` and alt attribute compatibility verified by `audit_readme.py`.
+- **Boot Integration Tests** — Added automated assertions in `10-tests.sh` to verify `hero.svg` existence and `README.md` image embed link.
+
+### Changed
+- **README Redesign** — Re-architected `README.md` structure with centered hero SVG, detailed bootstrap pipeline breakdown, Path A / Path B quick start instructions, Sway keyboard shortcuts table, architecture overview table, language version management details, boot test verification guide, and teardown instructions.
+- **Value Proposition & OOTB Focus** — Updated the introductory paragraph of `README.md` to clearly answer WHY users should choose this environment over standard cloud VMs, explicitly detailing out-of-the-box (OOTB) capabilities: pre-configured Sway (Wayland) tiling desktop, Nix store persistence, Antigravity Hub, `agy` CLI, and pre-installed VS Code.
+- **Optimized Section Placement** — Re-ordered `README.md` to place "What's Included" immediately below the main introductory paragraph, placing it ABOVE "How It Works" for instant technical component discovery.
+
 ## v1.3.0 — Align Terraform and Setup Script for Full E2E Coverage (2026-06-30)
+
 
 ### Changed
 - **Terraform Variable Defaults** — Updated `cluster_id` from `main-cluster` → `workstation-cluster`, `workstation_config_id` from `sway-config` → `ws-config`, `workstation_id` from `sway-workstation` → `dev-workstation`. Both Terraform and `cloud-build-setup.sh` now target the same test workstation by default.

@@ -1,373 +1,248 @@
-# Cloud Workstation
+<p align="center">
+  <img src="./assets/readme/hero.svg" width="100%" alt="GCP Cloud Workstation Architecture &amp; Overview">
+</p>
 
-Cloud Workstation in GCP with Sway desktop, Nix package manager, and a dev environment — accessible remotely via Chrome Remote Desktop.
+# GCP Cloud Workstation
+
+A high-performance, turn-key cloud development workspace designed to eliminate local environment drift and manual machine setup. Unlike standard cloud VMs or default cloud workstations, this environment delivers immediate out-of-the-box (OOTB) productivity on Google Cloud Platform—pre-configured with a low-latency Sway (Wayland) tiling desktop, durable Nix store persistence across container rebuilds, Antigravity Hub integration, the `agy` CLI, and pre-installed VS Code. Seamlessly accessible via web browser or Chrome Remote Desktop, it comes equipped with 190+ automated boot health verification tests and fully tuned developer tooling ready from first boot.
+
+---
+
+## What's Included
+
+| Component | Technical Details |
+|:---|:---|
+| **Compute Machine** | `n2-standard-8` (8 vCPU, 32 GB RAM) on GCP Cloud Workstations |
+| **Storage & Persistence** | 250 GB Persistent SSD mounted at `/home/user` (survives container teardown & rebuilds) |
+| **Desktop Environment** | Headless Sway (Wayland) with Tokyo Night theme, accessible via Browser & Chrome Remote Desktop |
+| **Terminal & Shell** | `foot` terminal, Zsh shell, Starship prompt, crash-resistant tmux multiplexer |
+| **Typography & Fonts** | JetBrains Mono, Fira Code, Cascadia Code, DejaVu Sans Mono |
+| **Development Runtimes** | Go (latest), Rust (`rustup`), Python 3.12 (`pyenv`), Ruby 3.3 (`rbenv`), Node.js 22 (Nix) |
+| **Editors & IDEs** | Antigravity IDE, VS Code, Neovim (Tokyo Night pre-configured) |
+| **AI Developer Tools** | Antigravity CLI |
+| **System Tools** | `ripgrep`, `fd`, `jq`, `ffmpeg`, `wofi`, `thunar`, `clipman` |
+| **Health Verification** | 190+ automated integration tests executed on every system startup |
+
+---
+
+## How It Works
+
+The Cloud Workstation container runs a minimal Ubuntu base image while storing all packages, language runtimes, user dotfiles, and configurations on a 250GB persistent SSD disk mounted to `/home/user`. 
+
+On every workstation boot, the system executes an automated sequence of numbered bootstrap scripts (`workstation-image/boot/01-12*.sh`):
+
+1. **Nix Restoration (`01-nix.sh`):** Bind-mounts persistent storage from `/home/user/nix` to `/nix` so all Nix packages survive container rebuilds.
+2. **GPU Driver Configuration (`02-nvidia.sh`):** Configures host NVIDIA drivers when a GPU is attached.
+3. **Display & Desktop Services (`03-sway.sh`):** Starts headless `sway-desktop` and `wayvnc` user services on display `:20`.
+4. **Developer Fonts (`04-fonts.sh`):** Installs JetBrains Mono, Fira Code, Cascadia Code, and custom developer fonts to persistent storage.
+5. **Shell & Terminal (`05-shell.sh`, `06-prompt.sh`):** Provisions ZSH, Starship prompt, `foot` terminal, and Tokyo Night visual tokens.
+6. **Tmux Multiplexer (`06b-tmux.sh`):** Configures crash-resistant tmux with custom keybindings and helper wrappers.
+7. **Apps & Language Runtimes (`07-apps.sh`, `07a-lang-deps.sh`, `07b-languages.sh`):** Manages Go, Rust, Python, Ruby, and Node.js versions.
+8. **Workspace Auto-Launch (`08-workspaces.sh`):** Automatically initializes workspace layouts (Antigravity IDE on WS1, VS Code on WS2, Terminal on WS3, Chrome on WS4).
+9. **Configuration Sync (`09-sync.sh`):** Synchronizes boot scripts and Sway configurations directly from git on boot.
+10. **Environment Health Verification (`10-tests.sh`):** Runs 190+ automated integration tests to ensure workspace health.
+
+---
 
 ## Quick Start
 
-1. Fork and clone this repo.
-2. Choose a setup path:
-   - **Path A (Recommended):** `bash scripts/ws.sh setup -p YOUR_PROJECT_ID` — fully automated, runs everything in Cloud Build.
-   - **Path B (Terraform):** `cd terraform && terraform init && terraform apply` for infrastructure, then Cloud Build for software provisioning.
+### Prerequisites
 
-## Setup Paths
+1. A GCP project with **Owner** role (or permissions: `workstations.admin`, `artifactregistry.admin`, `compute.admin`, `cloudbuild.builds.editor`, `iam.serviceAccountUser`).
+2. [Terraform](https://developer.hashicorp.com/terraform/downloads) (>= 1.0) and `gcloud` CLI installed locally.
+3. **GCP Auth:** Run `gcloud auth login` and `gcloud auth application-default login`.
 
-Both setup paths target `main-cluster`/`gcp-dev-cloud-workstation-config`/`gcp-dev-cloud-workstation` by default. These can be overridden using the naming flags described in the [Custom Naming](#custom-naming) section.
+### Deployment Options
 
-### Path A: Fully Automated (`ws.sh setup`) — Recommended for CI/CD
+```
+                              ┌────────────────────────────────────────┐
+                              │    Choose a Setup Path                 │
+                              └──────────────────┬─────────────────────┘
+                                                 │
+                        ┌────────────────────────┴────────────────────────┐
+                        ▼                                                 ▼
+        ┌───────────────────────────────┐                 ┌───────────────────────────────┐
+        │  Path A: Fully Automated      │                 │  Path B: Terraform + Scripts  │
+        │  (Recommended for CI/CD)      │                 │  (Custom Infra Control)       │
+        └───────────────┬───────────────┘                 └───────────────┬───────────────┘
+                        │                                                 │
+                        ▼                                                 ▼
+        `bash scripts/ws.sh setup`                        `cd terraform && terraform apply`
+        (Runs in Cloud Build)                             `bash scripts/deploy-configs.sh`
+```
 
-Runs the entire infrastructure + software provisioning pipeline inside Cloud Build. No local Terraform required.
+#### Path A: Fully Automated (`ws.sh setup`) — Recommended
+
+Executes infrastructure creation and container provisioning in Cloud Build.
 
 ```bash
 bash scripts/ws.sh setup -p YOUR_PROJECT_ID
 ```
 
-This single command will:
-- Enable required GCP APIs
-- Create Artifact Registry and build the Docker image
-- Create VPC, Cloud NAT, Workstation Cluster, Config, and Workstation
-- Install Nix, Home Manager, packages, boot scripts, fonts, languages, and AI tools
-- Create Cloud Scheduler for daily auto-stop
-- Create disk snapshot policy for daily backups
-- Verify noVNC desktop access
+This single command automatically provisions:
+- GCP API Enablement & Artifact Registry creation
+- VPC Network, Subnet, Cloud Router, and Cloud NAT
+- Custom Docker image build & Cloud Workstations Cluster / Config / Machine setup
+- Disk snapshot policy for daily backups & Cloud Scheduler auto-stop job
 
-Re-running is safe — all steps are idempotent.
+#### Path B: Terraform + Cloud Build
 
-### Path B: Terraform + Cloud Build
-
-Use Terraform for infrastructure provisioning (cluster, config, workstation, scheduler, snapshot policies), then Cloud Build for software provisioning. This gives you more control over infrastructure changes.
-
-See the detailed Terraform setup steps below.
-
-### Custom Naming
-If you want to use a custom naming scheme (e.g., `gcp-dev-cloud-workstation`), use these flags:
-
-**Path A (`ws.sh`):**
-```bash
-bash scripts/ws.sh setup -p YOUR_PROJECT_ID \
-  --cluster main-cluster \
-  --config gcp-dev-cloud-workstation-config \
-  --workstation gcp-dev-cloud-workstation
-```
-
-**Path B (`deploy-configs.sh`):**
-```bash
-bash scripts/deploy-configs.sh -p YOUR_PROJECT_ID \
-  -c main-cluster \
-  -f gcp-dev-cloud-workstation-config \
-  -w gcp-dev-cloud-workstation
-```
-
-If using Terraform (Path B), ensure you pass the matching variables:
-```bash
-terraform apply -var="project_id=..." -var="cluster_id=..." -var="workstation_config_id=..." -var="workstation_id=..."
-```
-
-## Setup
-
-### Prerequisites
-
-1. A GCP project where you have the **Owner** role (or specific granular permissions: `workstations.admin`, `artifactregistry.admin`, `compute.admin`, `cloudbuild.builds.editor`, `iam.serviceAccountUser`).
-2. [Terraform](https://developer.hashicorp.com/terraform/downloads) (>= 1.0) and the `gcloud` CLI installed.
-3. **GPU Quota**: Ensure your project has `NVIDIA_T4_GPUS` (or similar) quota in the target region.
-
-### Step 1: Authenticate
-
-Run the following commands to authenticate with GCP and configure Application Default Credentials (ADC):
+Use Terraform for explicit infrastructure management, then execute software provisioning scripts:
 
 ```bash
-gcloud auth login
-gcloud auth application-default login
-gcloud config set project YOUR_PROJECT_ID
-```
+# Step 1: Provision Network & Artifact Registry
+cd terraform
+terraform init
+terraform apply -var="project_id=YOUR_PROJECT_ID" \
+  -target=google_compute_network.workstations_vpc \
+  -target=google_compute_subnetwork.workstations_subnet \
+  -target=google_compute_router.workstations_router \
+  -target=google_compute_router_nat.workstations_nat \
+  -target=google_artifact_registry_repository.workstation_images
 
-Replace `YOUR_PROJECT_ID` with your actual GCP Project ID.
-
-### Step 2: Provision Network and Artifact Registry
-
-The Cloud Workstation configuration validates that the container image exists in the registry at creation time. Therefore, we must deploy the network and registry first:
-
-1. Navigate to the `terraform/` directory:
-   ```bash
-   cd terraform
-   ```
-2. Initialize Terraform:
-   ```bash
-   terraform init
-   ```
-3. Apply configurations targeting only the network and Artifact Registry resources:
-   ```bash
-   terraform apply \
-     -var="project_id=YOUR_PROJECT_ID" \
-     -target=google_compute_network.workstations_vpc \
-     -target=google_compute_subnetwork.workstations_subnet \
-     -target=google_compute_router.workstations_router \
-     -target=google_compute_router_nat.workstations_nat \
-     -target=google_artifact_registry_repository.workstation_images
-   ```
-
-### Step 3: Build and Push Custom Image
-
-From the root of the repository, build and push the custom workstation container image using Cloud Build:
-
-```bash
+# Step 2: Build & Push Container Image
 cd ..
 gcloud builds submit workstation-image/ \
   --tag="us-central1-docker.pkg.dev/YOUR_PROJECT_ID/workstation-images/dev-workstation:latest" \
-  --project="YOUR_PROJECT_ID" \
-  --region="us-central1"
-```
+  --project="YOUR_PROJECT_ID" --region="us-central1"
 
-### Step 4: Deploy Cluster, Configuration, and Workstation
-
-Now, complete the Terraform provisioning to create the cluster, configuration, workstation, and cost-saving daily scheduler:
-
-```bash
+# Step 3: Complete Terraform Infrastructure
 cd terraform
 terraform apply -var="project_id=YOUR_PROJECT_ID"
-```
 
-### Step 5: Deploy Configurations & Initialize Nix
-
-Start the workstation if it's not already running:
-
-```bash
-gcloud workstations start gcp-dev-cloud-workstation \
-  --cluster=main-cluster \
-  --region=us-central1 \
-  --project=YOUR_PROJECT_ID
-```
-
-Once started, deploy configurations and initialize the persistent Nix store from the repository root:
-
-```bash
+# Step 4: Deploy Configuration & Initialize Nix Store
 cd ..
 bash scripts/deploy-configs.sh -p YOUR_PROJECT_ID
 ```
 
-### Step 6: Restart and Configure
+### Custom Resource Naming
 
-Stop and start your workstation to trigger the persistent boot scripts (which mount `/nix`, start the Sway desktop, and configure the desktop environment):
+Customize resource names across both setup paths using flags:
 
 ```bash
-gcloud workstations stop gcp-dev-cloud-workstation --cluster=main-cluster --region=us-central1 --project=YOUR_PROJECT_ID
-gcloud workstations start gcp-dev-cloud-workstation --cluster=main-cluster --region=us-central1 --project=YOUR_PROJECT_ID
+bash scripts/ws.sh setup -p YOUR_PROJECT_ID \
+  --cluster main-cluster \
+  --config dev-config \
+  --workstation dev-workstation
 ```
 
-### Step 7: Configure Chrome Remote Desktop (CRD)
+---
 
-To connect to your Sway desktop session, you must authorize and link the workstation with Chrome Remote Desktop:
+## Desktop & Workspace Access
 
-1. SSH into the workstation:
-   ```bash
-   gcloud workstations ssh gcp-dev-cloud-workstation \
-     --cluster=main-cluster \
-     --region=us-central1 \
-     --project=YOUR_PROJECT_ID
-   ```
-2. Run the interactive CRD setup script:
-   ```bash
-   setup-crd.sh
-   ```
-3. Follow the terminal prompts:
-   - Navigate to [remotedesktop.google.com/headless](https://remotedesktop.google.com/headless) in your local web browser.
-   - Authorize the connection, copy the command for **Debian Linux**, and paste it into the SSH terminal.
-   - Set a 6-digit PIN when prompted.
+### Connecting via Browser
 
-### Step 8: Access the Desktop
-
-Once configured, access your workstation remotely:
-
-1. Navigate to [remotedesktop.google.com/access](https://remotedesktop.google.com/access) in your browser.
-2. Select your workstation name and enter the 6-digit PIN you created.
-3. Once connected, resize your nested Sway desktop to fit your screen resolution by running:
-   ```bash
-   crd-resize 2560 1440  # Replace with your desired width and height
-   ```
-
-
-## After Setup
-
-### Start your workstation
-
-The setup script stops the workstation at the end to save costs. Start it when you're ready:
+Retrieve the direct web workstation URL:
 
 ```bash
-gcloud workstations start gcp-dev-cloud-workstation \
-  --config=gcp-dev-cloud-workstation-config \
-  --cluster=main-cluster \
-  --region=us-central1 \
-  --project=YOUR_PROJECT_ID
-```
-
-## Troubleshooting
-
-### Browser Connection Error (Port 80)
-If you see the error `Unable to forward your request to a backend. Couldn't connect to a server on port 80` when opening the workstation URL:
-
-*   **Initial Bootstrap**: On the first boot after running `deploy-configs.sh`, the workstation performs a full compilation of language toolchains (Ruby, Python) to ensure they are properly optimized for the persistent home disk. This process is **blocking** and can take **10-15 minutes**.
-*   **Delayed Startup**: The system manager (`systemd`) and desktop services (`noVNC`) will not start until these bootstrap scripts complete.
-*   **Monitoring**: You can monitor the progress by SSHing into the workstation and checking the process list:
-    ```bash
-    gcloud workstations ssh gcp-dev-cloud-workstation --command "ps -ef | grep ruby"
-    ```
-*   **Resolution**: Simply wait for the compilation to finish. The workstation will automatically become reachable on port 80 once the scripts exit and `systemd` takes over.
-
-
-### Connect via browser
-
-Get the workstation URL:
-
-```bash
-gcloud workstations describe gcp-dev-cloud-workstation \
-  --config=gcp-dev-cloud-workstation-config \
-  --cluster=main-cluster \
+gcloud workstations describe dev-workstation \
+  --cluster=workstation-cluster \
+  --config=ws-config \
   --region=us-central1 \
   --project=YOUR_PROJECT_ID \
   --format="value(host)"
 ```
 
-Open the connection URL in your browser or connect via Chrome Remote Desktop. The Sway desktop loads automatically with 4 pre-launched workspaces.
+Open the returned URL in Google Chrome.
 
-### Auto-stop
+### Chrome Remote Desktop (CRD) Setup
 
-A Cloud Scheduler job stops the workstation daily at **8:00 PM Central** to save costs. Start it manually when you need it.
+For high-framerate remote desktop access:
 
-## What's Included
+1. SSH into the workstation:
+   ```bash
+   gcloud workstations ssh dev-workstation --cluster=workstation-cluster --region=us-central1 --project=YOUR_PROJECT_ID
+   ```
+2. Run the interactive CRD setup utility:
+   ```bash
+   setup-crd.sh
+   ```
+3. Follow terminal prompts: navigate to [remotedesktop.google.com/headless](https://remotedesktop.google.com/headless), authorize, copy the Debian command into the SSH terminal, and set a 6-digit PIN.
+4. Access via [remotedesktop.google.com/access](https://remotedesktop.google.com/access) and adjust resolution:
+   ```bash
+   crd-resize 2560 1440
+   ```
 
-| Component | Details |
-|-----------|---------|
-| **Machine** | n2-standard-8 (32GB RAM) |
-| **Storage** | 200GB persistent disk (all data survives reboots) |
-| **Desktop** | Sway (Wayland) with Tokyo Night theme, accessed via Chrome Remote Desktop |
-| **Terminal** | foot terminal, ZSH + Starship prompt, DejaVu Sans Mono font (size 14), tmux with Tokyo Night theme |
-| **Fonts** | DejaVu Sans Mono (system), Operator Mono (proprietary OTF), Cascadia Code, Fira Code, JetBrains Mono (via Nix) |
-| **Browsers** | Google Chrome, Chromium |
-| **IDEs** | Antigravity IDE, VS Code, Neovim (custom config) |
-| **AI Tools** | Antigravity CLI |
-| **Languages** | Go (latest), Rust (via rustup), Python 3.12 (via pyenv), Ruby 3.3 (via rbenv), Node.js 22 (via Nix) |
-| **Apps** | Antigravity Hub, tmux, ripgrep, fd, jq, ffmpeg, wofi, thunar, clipman |
-| **Networking** | Tailscale VPN (opt-in via `~/.env`) |
-| **Auto-stop** | Cloud Scheduler stops workstation daily at 8PM Central |
-| **Boot apps** | 4 workspaces auto-launch: Antigravity IDE (ws1), VS Code (ws2), terminal (ws3), Chrome (ws4) |
-| **Deployment** | Installs standard base packages, VS Code, and Antigravity tools |
-| **Boot tests** | 190+ automated tests run on every boot — results at `~/logs/boot-test-results.txt` |
-| **Packages** | Managed via Nix Home Manager on persistent disk |
+---
 
 ## Keyboard Shortcuts
 
-All shortcuts use `CTRL+SHIFT` as the modifier (works through Chrome Remote Desktop).
+All Sway desktop navigation shortcuts use `CTRL+SHIFT` as the modifier key to ensure seamless compatibility with web browsers and remote desktop clients:
 
-| Shortcut | Action |
-|----------|--------|
-| `CTRL+SHIFT+Enter` | New terminal (foot) |
-| `CTRL+SHIFT+T` | New terminal (foot) |
-| `CTRL+SHIFT+B` | Chrome browser |
-| `CTRL+SHIFT+Y` | VS Code |
-| `CTRL+SHIFT+R` | App launcher (wofi) |
-| `CTRL+SHIFT+A` | Clipboard history (clipman) |
-| `CTRL+SHIFT+S` | Snippet picker |
-| `CTRL+SHIFT+E` | File manager (thunar) |
-| `CTRL+SHIFT+D` | Toggle floating window |
-| `CTRL+SHIFT+Q` | Close window |
-| `CTRL+SHIFT+F` | Toggle fullscreen |
-| `CTRL+SHIFT+H/I/O/P` | Switch to workspace 1/2/3/4 |
-| `CTRL+SHIFT+U/J/K/L` | Switch to workspace 5/6/7/8 |
-| `CTRL+SHIFT+Alt+H/I/O/P` | Move window to workspace 1/2/3/4 |
-| `CTRL+SHIFT+Alt+U/J/K/L` | Move window to workspace 5/6/7/8 |
-| `CTRL+SHIFT+Arrow keys` | Focus window left/right/up/down |
-| `CTRL+SHIFT+,/.` | Grow/shrink window width |
-| `CTRL+SHIFT+-/=` | Shrink/grow window height |
-| `CTRL+SHIFT+Escape` | Exit Sway (with confirmation) |
+| Keybinding | Action |
+|:---|:---|
+| `CTRL+SHIFT+Enter` / `CTRL+SHIFT+T` | Open Terminal (`foot`) |
+| `CTRL+SHIFT+B` | Launch Google Chrome |
+| `CTRL+SHIFT+Y` | Launch VS Code |
+| `CTRL+SHIFT+R` | Open App Launcher (`wofi`) |
+| `CTRL+SHIFT+A` | Open Clipboard History (`clipman`) |
+| `CTRL+SHIFT+S` | Open Interactive Snippet Picker |
+| `CTRL+SHIFT+E` | Open File Manager (`thunar`) |
+| `CTRL+SHIFT+D` | Toggle Window Floating State |
+| `CTRL+SHIFT+Q` | Close Active Window |
+| `CTRL+SHIFT+F` | Toggle Fullscreen Mode |
+| `CTRL+SHIFT+H / I / O / P` | Switch to Workspace 1 / 2 / 3 / 4 |
+| `CTRL+SHIFT+U / J / K / L` | Switch to Workspace 5 / 6 / 7 / 8 |
+| `CTRL+SHIFT+Alt+H / I / O / P` | Move Focused Window to Workspace 1 / 2 / 3 / 4 |
+| `CTRL+SHIFT+Alt+U / J / K / L` | Move Focused Window to Workspace 5 / 6 / 7 / 8 |
+| `CTRL+SHIFT+Arrow Keys` | Move Focus Left / Right / Up / Down |
+| `CTRL+SHIFT+,` / `CTRL+SHIFT+.` | Grow / Shrink Window Width |
+| `CTRL+SHIFT+-` / `CTRL+SHIFT+=` | Shrink / Grow Window Height |
+| `CTRL+SHIFT+Escape` | Exit Sway Desktop Session |
+
+---
 
 ## Language Version Management
 
-Languages are managed by native version managers for easy multi-version support:
+Language runtimes use dedicated version managers installed on persistent home storage:
 
-| Language | Manager | Switch Versions |
-|----------|---------|----------------|
-| Go | Direct install | Download from go.dev |
-| Rust | rustup | `rustup install nightly` |
-| Python | pyenv | `pyenv install 3.11 && pyenv global 3.11` |
-| Ruby | rbenv | `rbenv install 3.2.0 && rbenv global 3.2.0` |
-| Node.js | Nix | Managed via Home Manager |
+| Language | Version Manager | Usage Command |
+|:---|:---|:---|
+| **Python** | `pyenv` | `pyenv install 3.12.0 && pyenv global 3.12.0` |
+| **Ruby** | `rbenv` | `rbenv install 3.3.0 && rbenv global 3.3.0` |
+| **Rust** | `rustup` | `rustup update stable && rustup default stable` |
+| **Go** | Binary Release | Installed directly to `/home/user/.local/go` |
+| **Node.js** | Nix Home Manager | Managed persistently via `home-manager switch` |
 
-## tmux + Claude Code Aliases
+---
 
-The workstation includes crash-resistant tmux sessions pre-configured for Claude Code:
+## Automated Boot Integration Tests
 
-| Alias | Description |
-|-------|-------------|
-| `t1` through `t10` | Launch Claude Code in named tmux sessions (`claude-1` through `claude-10`) |
-| `cc` | Alias for `t1` (quick start) |
-| `tdbg` | Launch Claude Code in a debug tmux session with server-level logging to `~/logs/tmux/` |
+Every system boot triggers an extensive integration test suite (`workstation-image/boot/10-tests.sh`) to verify environment health.
 
-Sessions use `claude-tmux`, a wrapper that auto-launches `claude --dangerously-skip-permissions` inside tmux. If the session already exists, it reattaches. tmux is configured with Tokyo Night theme, mouse support, true color, and vi copy mode.
+Log outputs are saved to:
+- `~/logs/boot-test-results.txt`: Comprehensive PASS / FAIL status for each module.
+- `~/logs/boot-test-summary.txt`: Single-line summary (e.g., `PASS: 190 | FAIL: 0 | WARN: 0`).
 
-## Tailscale VPN (Optional)
-
-Tailscale provides secure SSH access to your workstation without port forwarding or VPNs.
-
-To enable, add these to `~/.env` on your workstation:
+Run tests manually at any time:
 
 ```bash
-TAILSCALE_AUTHKEY=tskey-auth-xxxxx   # From https://login.tailscale.com/admin/settings/keys
-USER_PASSWORD=your-ssh-password       # Optional: sets SSH password for the 'user' account
+bash /home/user/boot/10-tests.sh
 ```
 
-On the next boot, the workstation will:
-1. Auto-install Tailscale (if the binary is missing from the ephemeral root disk)
-2. Start the Tailscale daemon
-3. Authenticate with your auth key
-4. Enable Tailscale SSH
-5. Set the SSH password (if `USER_PASSWORD` is defined)
-
-You can then SSH via `ssh user@<workstation-tailscale-hostname>`.
-
-## Boot Tests
-
-Every boot runs 190+ automated tests to verify the workstation is healthy. Results are saved to:
-
-- `~/logs/boot-test-results.txt` — full PASS/FAIL/WARN details
-- `~/logs/boot-test-summary.txt` — one-line summary (e.g., `PASS: 77 | FAIL: 0 | WARN: 3`)
-
-Tests cover: Nix, Sway, fonts, shell, AI tools, IDEs, languages, keybindings, clipboard, snippets, and more.
-
-## Re-running Setup
-
-The setup is fully **idempotent**. If it fails or you want to update, just run it again:
-
-```bash
-bash scripts/ws.sh setup -p YOUR_PROJECT_ID
-```
-
-Existing resources are detected and skipped. Only missing components are created.
-
-## Teardown / Cleanup
-
-To delete **all** resources created by setup (workstation, cluster, images, NAT, scheduler):
-
-```bash
-bash scripts/ws.sh teardown -p YOUR_PROJECT_ID
-```
-
-Add `-y` to skip the confirmation prompt. Add `-w` / `-e` for notifications.
-
-This is useful for:
-- Testing setup from scratch
-- Cleaning up a project you no longer need
-- Freeing GPU quota for another project
-
-After teardown, you can re-run `setup.sh` to recreate everything.
+---
 
 ## Troubleshooting
 
-| Issue | Fix |
-|-------|-----|
-| Workstation won't start | Check Cloud Workstation quotas in your region in [Cloud Console](https://console.cloud.google.com/iam-admin/quotas) |
-| Build fails mid-way | Re-run `ws.sh setup` — it picks up where it left off (idempotent) |
-| Can't connect via Chrome Remote Desktop | Ensure workstation is started, wait 30s for Sway + wayvnc to boot |
-| Apps not on workspaces | Wait 15-20s after boot for auto-launch to complete |
-| Cloud Shell disconnected | No problem — Cloud Build continues independently. Check progress in Cloud Console |
-| IDE keybinding not working | Check `~/logs/boot-test-results.txt` for related FAIL entries |
-| Claude Code not working | Ensure `~/.env` has your API keys — it's sourced automatically on boot |
-| Boot test failures | Run `cat ~/logs/boot-test-results.txt` to see full PASS/FAIL details |
+| Issue | Cause | Solution |
+|:---|:---|:---|
+| **Port 80 Connection Error** | Initial Language Compilation | On fresh deployments, language runtimes compile optimized binaries on first boot (takes 10-15 mins). Wait for bootstrap completion. |
+| **CRD Session Black Screen** | Sway Service Starting | Wait 30 seconds after starting workstation for Sway and `wayvnc` systemd services to finish initializing. |
+| **Missing AI Credentials** | `~/.env` Not Sourced | Ensure API keys are set in `~/.env`. The shell auto-sources this file on startup. |
+| **Quota Exceeded Error** | GCP Regional Quotas | Request `NVIDIA_T4_GPUS` or CPU quota in target region via [GCP IAM Quotas](https://console.cloud.google.com/iam-admin/quotas). |
+
+---
+
+## Teardown & Cleanup
+
+To destroy all provisioned GCP infrastructure (workstation, cluster, container repository, Cloud Scheduler):
+
+```bash
+bash scripts/ws.sh teardown -p YOUR_PROJECT_ID -y
+```
+
+---
+
+## License & Attribution
+
+Designed and maintained for GCP Cloud Workstations development.

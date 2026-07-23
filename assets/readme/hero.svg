@@ -1,0 +1,168 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 380" width="100%" height="100%">
+  <title>GCP Cloud Workstation Architecture &amp; Overview</title>
+  <defs>
+    <style>
+      .bg { fill: #1a1b26; }
+      .card { fill: #24283b; stroke: #414868; stroke-width: 1.5; }
+      .node-card { fill: #1f2335; stroke: #3b4261; stroke-width: 1.5; }
+      .node-card-active { fill: #1f2335; stroke: #7aa2f7; stroke-width: 1.5; }
+      .node-card-success { fill: #1f2335; stroke: #9ece6a; stroke-width: 1.5; }
+      .title { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-weight: 800; font-size: 38px; fill: #c0caf5; }
+      .title-accent { fill: #7aa2f7; }
+      .subtitle { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 17px; fill: #9aa5ce; font-weight: 400; }
+      .badge-text { font-family: 'JetBrains Mono', 'Fira Code', monospace, sans-serif; font-size: 13px; font-weight: 600; }
+      .node-title { font-family: 'JetBrains Mono', 'Fira Code', monospace, sans-serif; font-size: 15px; font-weight: 700; fill: #c0caf5; }
+      .node-desc { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; fill: #a9b1d6; }
+      .section-label { font-family: 'JetBrains Mono', 'Fira Code', monospace, sans-serif; font-size: 12px; font-weight: 700; fill: #7dcfff; letter-spacing: 1.5px; }
+      .arrow { stroke: #7aa2f7; stroke-width: 2; fill: none; stroke-dasharray: 4 2; }
+      .arrow-head { fill: #7aa2f7; }
+      .stat-num { font-family: 'JetBrains Mono', 'Fira Code', monospace, sans-serif; font-size: 26px; font-weight: 800; fill: #9ece6a; }
+      .stat-lbl { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 12px; fill: #7dcfff; text-transform: uppercase; letter-spacing: 0.5px; }
+    </style>
+    <radialGradient id="glow-left" cx="15%" cy="25%" r="60%">
+      <stop offset="0%" stop-color="#7aa2f7" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#1a1b26" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow-right" cx="85%" cy="75%" r="60%">
+      <stop offset="0%" stop-color="#bb9af7" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#1a1b26" stop-opacity="0"/>
+    </radialGradient>
+    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" class="arrow-head" />
+    </marker>
+  </defs>
+
+  <!-- Solid Background Fill for Dark & Light GitHub Themes -->
+  <rect width="1200" height="380" rx="16" class="bg" />
+  <rect width="1200" height="380" rx="16" fill="url(#glow-left)" />
+  <rect width="1200" height="380" rx="16" fill="url(#glow-right)" />
+
+  <!-- Outer Border -->
+  <rect width="1198" height="378" x="1" y="1" rx="15" fill="none" stroke="#2ac3de" stroke-width="1" stroke-opacity="0.3"/>
+
+  <!-- Left Column: Product Branding & Attributes -->
+  <g transform="translate(45, 40)">
+    <!-- Top Pill Badge -->
+    <rect x="0" y="0" width="195" height="28" rx="14" fill="#1d202f" stroke="#7dcfff" stroke-width="1"/>
+    <circle cx="14" cy="14" r="5" fill="#7dcfff"/>
+    <text x="28" y="18" class="section-label">GCP INFRASTRUCTURE</text>
+
+    <!-- Main Heading -->
+    <text x="0" y="68" class="title">
+      <tspan class="title-accent">Cloud</tspan> Workstation
+    </text>
+
+    <!-- Description -->
+    <text x="0" y="98" class="subtitle">Sway (Wayland) Desktop &amp; Nix Persistent Storage</text>
+    <text x="0" y="120" class="subtitle">Automated GCP provisioning via Cloud Build &amp; Terraform</text>
+
+    <!-- Feature Pills Grid -->
+    <g transform="translate(0, 142)">
+      <!-- Pill 1: Nix Store -->
+      <rect x="0" y="0" width="220" height="34" rx="8" fill="#1f2335" stroke="#7dcfff" stroke-width="1.2"/>
+      <text x="14" y="21" class="badge-text" fill="#7dcfff">❄ Nix Persistent Home</text>
+
+      <!-- Pill 2: Sway Desktop -->
+      <rect x="230" y="0" width="220" height="34" rx="8" fill="#1f2335" stroke="#bb9af7" stroke-width="1.2"/>
+      <text x="244" y="21" class="badge-text" fill="#bb9af7">🖥 Sway Desktop + CRD</text>
+
+      <!-- Pill 3: Zsh & Tmux -->
+      <rect x="0" y="44" width="220" height="34" rx="8" fill="#1f2335" stroke="#7aa2f7" stroke-width="1.2"/>
+      <text x="14" y="65" class="badge-text" fill="#7aa2f7">⚡ Zsh + Tmux + Starship</text>
+
+      <!-- Pill 4: Pre-configured AI -->
+      <rect x="230" y="44" width="220" height="34" rx="8" fill="#1f2335" stroke="#e0af68" stroke-width="1.2"/>
+      <text x="244" y="65" class="badge-text" fill="#e0af68">🤖 AI Coding Stack</text>
+    </g>
+
+    <!-- Key Metrics Stats Box -->
+    <g transform="translate(0, 240)">
+      <rect x="0" y="0" width="450" height="60" rx="10" fill="#16161e" stroke="#3b4261" stroke-width="1"/>
+      
+      <!-- Stat 1 -->
+      <g transform="translate(20, 12)">
+        <text x="0" y="22" class="stat-num">32 GB</text>
+        <text x="0" y="38" class="stat-lbl">RAM Memory</text>
+      </g>
+      <line x1="125" y1="12" x2="125" y2="48" stroke="#3b4261" stroke-width="1"/>
+
+      <!-- Stat 2 -->
+      <g transform="translate(145, 12)">
+        <text x="0" y="22" class="stat-num">250 GB</text>
+        <text x="0" y="38" class="stat-lbl">SSD Persistence</text>
+      </g>
+      <line x1="270" y1="12" x2="270" y2="48" stroke="#3b4261" stroke-width="1"/>
+
+      <!-- Stat 3 -->
+      <g transform="translate(290, 12)">
+        <text x="0" y="22" class="stat-num">190+</text>
+        <text x="0" y="38" class="stat-lbl">Health Tests</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Right Column: Container Bootstrap Pipeline Card -->
+  <g transform="translate(535, 32)">
+    <rect width="620" height="316" rx="14" class="card" />
+
+    <!-- Terminal Header Bar -->
+    <path d="M 0 14 A 14 14 0 0 1 14 0 L 606 0 A 14 14 0 0 1 620 14 L 620 38 L 0 38 Z" fill="#1f2335" />
+    <circle cx="20" cy="19" r="6" fill="#f7768e" />
+    <circle cx="38" cy="19" r="6" fill="#e0af68" />
+    <circle cx="56" cy="19" r="6" fill="#9ece6a" />
+    <text x="80" y="24" class="section-label">CONTAINER BOOTSTRAP PIPELINE</text>
+    <rect x="490" y="9" width="115" height="20" rx="10" fill="#9ece6a" fill-opacity="0.15" stroke="#9ece6a" stroke-width="1"/>
+    <text x="502" y="23" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700" fill="#9ece6a">AUTOMATED</text>
+
+    <!-- Flow Grid / Steps -->
+    
+    <!-- Step 1: Nix Storage -->
+    <g transform="translate(25, 60)">
+      <rect width="250" height="95" rx="10" class="node-card-active" />
+      <rect x="15" y="15" width="28" height="28" rx="6" fill="#7aa2f7" fill-opacity="0.2" stroke="#7aa2f7" stroke-width="1"/>
+      <text x="29" y="34" text-anchor="middle" font-family="monospace" font-size="14" font-weight="bold" fill="#7aa2f7">01</text>
+      <text x="55" y="32" class="node-title">Nix Persist</text>
+      <text x="15" y="60" class="node-desc">Bind-mounts persistent store</text>
+      <text x="15" y="78" font-family="'JetBrains Mono', monospace" font-size="12" fill="#7dcfff">/home/user/nix → /nix</text>
+    </g>
+
+    <!-- Arrow 1 to 2 -->
+    <line x1="280" y1="107" x2="330" y2="107" class="arrow" marker-end="url(#arrowhead)"/>
+
+    <!-- Step 2: Services -->
+    <g transform="translate(340, 60)">
+      <rect width="255" height="95" rx="10" class="node-card" />
+      <rect x="15" y="15" width="28" height="28" rx="6" fill="#bb9af7" fill-opacity="0.2" stroke="#bb9af7" stroke-width="1"/>
+      <text x="29" y="34" text-anchor="middle" font-family="monospace" font-size="14" font-weight="bold" fill="#bb9af7">03</text>
+      <text x="55" y="32" class="node-title">Display &amp; VNC</text>
+      <text x="15" y="60" class="node-desc">Headless Sway &amp; wayvnc</text>
+      <text x="15" y="78" font-family="'JetBrains Mono', monospace" font-size="12" fill="#bb9af7">sway-desktop &amp; CRD :20</text>
+    </g>
+
+    <!-- Arrow 2 to 3 (down and left) -->
+    <path d="M 467 160 L 467 185 L 150 185 L 150 200" class="arrow" marker-end="url(#arrowhead)"/>
+
+    <!-- Step 3: Shell & Apps -->
+    <g transform="translate(25, 200)">
+      <rect width="250" height="95" rx="10" class="node-card" />
+      <rect x="15" y="15" width="28" height="28" rx="6" fill="#e0af68" fill-opacity="0.2" stroke="#e0af68" stroke-width="1"/>
+      <text x="29" y="34" text-anchor="middle" font-family="monospace" font-size="14" font-weight="bold" fill="#e0af68">05</text>
+      <text x="55" y="32" class="node-title">Apps &amp; Environment</text>
+      <text x="15" y="60" class="node-desc">Fonts, Zsh, Tmux, Runtimes</text>
+      <text x="15" y="78" font-family="'JetBrains Mono', monospace" font-size="12" fill="#e0af68">04-fonts, 05-shell, 07-apps</text>
+    </g>
+
+    <!-- Arrow 3 to 4 -->
+    <line x1="280" y1="247" x2="330" y2="247" class="arrow" marker-end="url(#arrowhead)"/>
+
+    <!-- Step 4: Verification -->
+    <g transform="translate(340, 200)">
+      <rect width="255" height="95" rx="10" class="node-card-success" />
+      <rect x="15" y="15" width="28" height="28" rx="6" fill="#9ece6a" fill-opacity="0.2" stroke="#9ece6a" stroke-width="1"/>
+      <text x="29" y="34" text-anchor="middle" font-family="monospace" font-size="14" font-weight="bold" fill="#9ece6a">10</text>
+      <text x="55" y="32" class="node-title">Boot Verification</text>
+      <text x="15" y="60" class="node-desc">Integration tests run on startup</text>
+      <text x="15" y="78" font-family="'JetBrains Mono', monospace" font-size="12" font-weight="bold" fill="#9ece6a">✓ 190+ Tests Passed</text>
+    </g>
+  </g>
+</svg>

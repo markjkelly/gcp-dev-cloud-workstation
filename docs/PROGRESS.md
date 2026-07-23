@@ -446,3 +446,31 @@ Milestone 1: Initial Setup
 ### Next Steps
 - PO review and manual PR merge.
 
+## Session 14 — 2026-07-23 (F-0015 Spec & Backlog: Environment and Identity Configuration via Git-ignored .env file)
+
+### Date
+2026-07-23
+
+### Milestone
+Milestone 1: Initial Setup
+
+### Completed
+- **F-0015** (Spec & Backlog only - Environment and Identity Configuration via Git-ignored .env file):
+  - Created product spec `docs/specs/F-0015-env-identity-config.md` detailing requirements for an explicit git-ignored `.env` file as single source of truth (`GCP_PROJECT_ID`, `DEVELOPER_GIT_NAME`, `DEVELOPER_GIT_EMAIL`, `LIVE_CLUSTER_ID`, `LIVE_WORKSTATION_ID`, `TEST_CLUSTER_ID`, `TEST_WORKSTATION_ID`) and fail-fast abort rules.
+  - Updated `docs/BACKLOG.md` under Milestone 1 to track F-0015 with status `backlog`, owner unset (`—`), and branch `—`.
+  - Created feature branch `feature/F-0015-env-identity-config-spec` off `main`.
+
+### Files Changed
+- `docs/specs/F-0015-env-identity-config.md`
+- `docs/BACKLOG.md`
+- `docs/PROGRESS.md`
+
+### Decisions
+- Deferred application script code modifications and `AGENTS.md` edits to the future implementation phase.
+- Established strict fail-fast requirement: scripts must abort with exit code 1 if `.env` or required variables are missing, removing all dynamic fallbacks and heuristics.
+
+### Next Steps
+- PO review and merge PR for F-0015 spec and backlog update.
+- Implement F-0015 script refactoring and boot tests in follow-up session.
+
+

@@ -35,5 +35,6 @@
 | F-0012 | Isolated E2E Testing Environment | docs/specs/F-0012-isolated-e2e-env.md | P0 | in-progress | SWE | feature/isolated-e2e-env | F-0010 | Create dedicated GCP project for safe E2E testing |
 | F-0013 | Beautify README | docs/specs/F-0013-beautify-readme.md | P1 | done | SWE | feature/beautify-readme | — | High-contrast Tokyo Night SVG hero, structured README hierarchy, audit checks & boot tests |
 | F-0014 | Antigravity Hub Documentation in README | docs/specs/F-0014-readme-hub-docs.md | P1 | done | SWE | feature/readme-hub-docs | F-0003 | Document preinstalled Antigravity Hub, hub-restart utility, Wayland display rationale, and ws5 mapping in README |
+| F-0015 | Upgrade Antigravity Suite (CLI, IDE, Hub) | docs/specs/F-0015-upgrade-antigravity-suite.md | P1 | done | SWE | feature/upgrade-antigravity-suite | F-0009 | Upgrade CLI to 1.1.13+, add version-aware upgrade logic for CLI and Hub in 07-apps.sh, verify IDE 2.1.1, and update integration tests |
 
 

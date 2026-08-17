@@ -268,7 +268,7 @@ DESKTOP_EOF
     log "Antigravity IDE v2: wrapper and .desktop deployed/updated"
 fi
 
-# --- Install/update Antigravity 2.0 Desktop App (Hub) ---
+# --- Install/update Antigravity 2.0 Desktop App (Hub) (F-0015) ---
 # NOTE: URL version 2.0.10-5119448496078848 is hardcoded. Update this URL when a
 # new version of antigravity-hub is released.
 log "Installing/updating Antigravity 2.0 Desktop App (Hub)..."
@@ -276,9 +276,42 @@ HUB_INSTALL_DIR="$HOME_DIR/.local/share/antigravity-hub"
 HUB_SYMLINK="$HOME_DIR/.local/bin/antigravity-hub"
 HUB_URL="https://storage.googleapis.com/antigravity-public/antigravity-hub/2.0.10-5119448496078848/linux-x64/Antigravity.tar.gz"
 HUB_TEMP="/tmp/antigravity-hub-download.tar.gz"
+HUB_EXPECTED_VERSION="2.0.10"
 
+hub_needs_install=0
 if [ ! -d "$HUB_INSTALL_DIR" ]; then
-    log "Antigravity Hub not found — downloading and extracting..."
+    log "Antigravity Hub not found — downloading and extracting v${HUB_EXPECTED_VERSION}..."
+    hub_needs_install=1
+else
+    # Directory exists — check installed version from app.asar
+    HUB_INSTALLED_VERSION=$(python3 -c "
+import struct, json
+try:
+    with open('$HUB_INSTALL_DIR/resources/app.asar', 'rb') as f:
+        f.seek(12)
+        hsize = struct.unpack('<I', f.read(4))[0]
+        header = json.loads(f.read(hsize).decode('utf-8'))
+        pkg_info = header['files']['package.json']
+        f.seek(16 + hsize + int(pkg_info['offset']))
+        pkg = json.loads(f.read(int(pkg_info['size'])).decode('utf-8'))
+        print(pkg.get('version', 'unknown'))
+except Exception:
+    print('unknown')
+" 2>/dev/null || echo "unknown")
+
+    if [ "$HUB_INSTALLED_VERSION" = "$HUB_EXPECTED_VERSION" ]; then
+        log "Antigravity Hub: already at version $HUB_EXPECTED_VERSION — OK"
+        hub_needs_install=0
+    else
+        log "Antigravity Hub: version mismatch (installed=$HUB_INSTALLED_VERSION, expected=$HUB_EXPECTED_VERSION) — upgrading..."
+        BACKUP_SUFFIX=$(date +%s)
+        runuser -u $USER -- mv "$HUB_INSTALL_DIR" "${HUB_INSTALL_DIR}.bak.${BACKUP_SUFFIX}"
+        log "Antigravity Hub: backed up old install to ${HUB_INSTALL_DIR}.bak.${BACKUP_SUFFIX}"
+        hub_needs_install=1
+    fi
+fi
+
+if [ "$hub_needs_install" -eq 1 ]; then
     runuser -u $USER -- mkdir -p "$HOME_DIR/.local/share" "$HOME_DIR/.local/bin"
     if runuser -u $USER -- curl -fsSL --retry 3 --retry-delay 5 --connect-timeout 30 -o "$HUB_TEMP" "$HUB_URL" >> "$LOG_FILE" 2>&1; then
         if runuser -u $USER -- tar -xzf "$HUB_TEMP" -C "$HOME_DIR/.local/share/" >> "$LOG_FILE" 2>&1; then
@@ -287,7 +320,7 @@ if [ ! -d "$HUB_INSTALL_DIR" ]; then
             # Binary is named 'antigravity' inside the extracted directory
             runuser -u $USER -- ln -sf "$HUB_INSTALL_DIR/antigravity" "$HUB_SYMLINK"
             rm -f "$HUB_TEMP"
-            log "Antigravity Hub: downloaded, extracted, and symlinked — OK"
+            log "Antigravity Hub: downloaded, extracted, and symlinked v${HUB_EXPECTED_VERSION} — OK"
         else
             log "Antigravity Hub: extraction FAILED (rc=$?) — check $LOG_FILE for details"
             rm -f "$HUB_TEMP"
@@ -296,12 +329,16 @@ if [ ! -d "$HUB_INSTALL_DIR" ]; then
         log "Antigravity Hub: download FAILED (rc=$?) — check $LOG_FILE for details"
         rm -f "$HUB_TEMP"
     fi
-else
-    log "Antigravity Hub: already installed at $HUB_INSTALL_DIR — OK (no download needed)"
+
+    # Clean up old backups older than 7 days
+    find "$HOME_DIR/.local/share/" -maxdepth 1 -name "antigravity-hub.bak.*" -type d -mtime +7 -exec rm -rf {} + 2>/dev/null || true
 fi
 
-log "Extracting Antigravity Hub tray icon..."
-runuser -u $USER -- bash -c "cd \"$HUB_INSTALL_DIR\" && npx -y asar extract-file resources/app.asar icon.png" >> "$LOG_FILE" 2>&1 || true
+# Ensure tray icon exists
+if [ -d "$HUB_INSTALL_DIR" ] && [ ! -f "$HUB_INSTALL_DIR/icon.png" ]; then
+    log "Extracting Antigravity Hub tray icon..."
+    runuser -u $USER -- bash -c "cd \"$HUB_INSTALL_DIR\" && npx -y asar extract-file resources/app.asar icon.png" >> "$LOG_FILE" 2>&1 || true
+fi
 
 # Deploy the desktop file to ~/.local/share/applications/antigravity.desktop
 runuser -u $USER -- tee "$HOME_DIR/.local/share/applications/antigravity.desktop" > /dev/null <<'DESKTOP_EOF'
@@ -316,24 +353,40 @@ Terminal=false
 StartupWMClass=antigravity
 DESKTOP_EOF
 
-# --- Install/update Antigravity CLI ---
-# F-0121: check exit status; log real success or failure.
+# --- Install/update Antigravity CLI (F-0015) ---
 log "Installing/updating Antigravity CLI..."
-if [ ! -d "$HOME_DIR/.gemini/antigravity-cli" ]; then
-    log "Antigravity CLI not initialized — installing..."
-    if runuser -u $USER -- bash -c "curl -fsSL https://antigravity.google/cli/install.sh | bash" >> "$LOG_FILE" 2>&1; then
-        log "Antigravity CLI: installed OK"
-    else
-        log "Antigravity CLI: install FAILED (rc=$?) — check $LOG_FILE for details"
-    fi
+CLI_BIN="$HOME_DIR/.local/bin/agy"
+CLI_MANIFEST_URL="https://antigravity-cli-auto-updater-974169037036.us-central1.run.app/manifests/linux_amd64.json"
+
+cli_needs_install=0
+if [ ! -f "$CLI_BIN" ]; then
+    log "Antigravity CLI not found at $CLI_BIN — will install..."
+    cli_needs_install=1
 else
-    log "Antigravity CLI found — updating..."
-    if runuser -u $USER -- bash -c "curl -fsSL https://antigravity.google/cli/install.sh | bash" >> "$LOG_FILE" 2>&1; then
-        log "Antigravity CLI: updated OK"
+    # Check current version against latest manifest
+    CLI_INSTALLED_VER=$(runuser -u $USER -- "$CLI_BIN" --version 2>/dev/null | head -1 | tr -d '\r' || echo "unknown")
+    CLI_LATEST_VER=$(runuser -u $USER -- curl -fsSL --connect-timeout 5 "$CLI_MANIFEST_URL" 2>/dev/null | sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' || echo "")
+
+    if [ -n "$CLI_LATEST_VER" ] && [ "$CLI_INSTALLED_VER" != "$CLI_LATEST_VER" ]; then
+        log "Antigravity CLI: update available (installed=$CLI_INSTALLED_VER, latest=$CLI_LATEST_VER) — upgrading..."
+        # install.sh terminates early if $CLI_BIN exists. Delete existing binary to force upgrade.
+        runuser -u $USER -- rm -f "$CLI_BIN"
+        cli_needs_install=1
     else
-        log "Antigravity CLI: update FAILED (rc=$?) — check $LOG_FILE for details"
+        log "Antigravity CLI: already at latest version (installed=$CLI_INSTALLED_VER) — OK"
+        cli_needs_install=0
     fi
 fi
+
+if [ "$cli_needs_install" -eq 1 ]; then
+    if runuser -u $USER -- bash -c "curl -fsSL https://antigravity.google/cli/install.sh | bash" >> "$LOG_FILE" 2>&1; then
+        CLI_NEW_VER=$(runuser -u $USER -- "$CLI_BIN" --version 2>/dev/null | head -1 | tr -d '\r' || echo "unknown")
+        log "Antigravity CLI: install/update OK (version=$CLI_NEW_VER)"
+    else
+        log "Antigravity CLI: install/update FAILED (rc=$?) — check $LOG_FILE for details"
+    fi
+fi
+
 
 # --- Update Nix channel + Home Manager (VSCode, IntelliJ, etc.) ---
 # F-0121: check exit status; log real success or failure.

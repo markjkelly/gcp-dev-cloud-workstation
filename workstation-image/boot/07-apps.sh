@@ -153,11 +153,11 @@ log "F-0136: Installing Antigravity IDE v2..."
 IDE_INSTALL_DIR="$HOME_DIR/.local/share/antigravity-ide"
 IDE_SYMLINK="$HOME_DIR/.local/bin/antigravity-ide"
 IDE_DESKTOP="$HOME_DIR/.local/share/applications/antigravity-ide.desktop"
-IDE_URL="https://edgedl.me.gvt1.com/edgedl/release2/j0qc3/antigravity/stable/2.1.1-6123990880747520/linux-x64/Antigravity%20IDE.tar.gz"
+IDE_URL="https://edgedl.me.gvt1.com/edgedl/release2/j0qc3/antigravity/stable/2.5.5-4923483625488384/linux-x64/Antigravity%20IDE.tar.gz"
 IDE_TEMP="/tmp/antigravity-ide-v2-download.tar.gz"
-IDE_EXPECTED_VERSION="2.1.1"
+IDE_EXPECTED_VERSION="2.5.5"
 
-# Version-aware install/upgrade logic (F-0009)
+# Version-aware install/upgrade logic (F-0009 / F-0016)
 ide_needs_install=0
 if [ ! -d "$IDE_INSTALL_DIR" ]; then
     # Fresh install — directory does not exist
@@ -268,42 +268,31 @@ DESKTOP_EOF
     log "Antigravity IDE v2: wrapper and .desktop deployed/updated"
 fi
 
-# --- Install/update Antigravity 2.0 Desktop App (Hub) (F-0015) ---
-# NOTE: URL version 2.0.10-5119448496078848 is hardcoded. Update this URL when a
+# --- Install/update Antigravity 2.0 Desktop App (Hub) (F-0016) ---
+# NOTE: URL version 2.8.1-6512087774658560 is hardcoded. Update this URL when a
 # new version of antigravity-hub is released.
 log "Installing/updating Antigravity 2.0 Desktop App (Hub)..."
 HUB_INSTALL_DIR="$HOME_DIR/.local/share/antigravity-hub"
 HUB_SYMLINK="$HOME_DIR/.local/bin/antigravity-hub"
-HUB_URL="https://storage.googleapis.com/antigravity-public/antigravity-hub/2.0.10-5119448496078848/linux-x64/Antigravity.tar.gz"
+HUB_URL="https://storage.googleapis.com/antigravity-public/antigravity-hub/2.8.1-6512087774658560/linux-x64/Antigravity.tar.gz"
 HUB_TEMP="/tmp/antigravity-hub-download.tar.gz"
-HUB_EXPECTED_VERSION="2.0.10"
+HUB_EXPECTED_VERSION="2.8.1"
 
+# Version-aware install/upgrade logic for Hub (F-0016)
 hub_needs_install=0
 if [ ! -d "$HUB_INSTALL_DIR" ]; then
-    log "Antigravity Hub not found — downloading and extracting v${HUB_EXPECTED_VERSION}..."
+    # Fresh install — directory does not exist
+    log "Antigravity Hub not found — will download and install..."
     hub_needs_install=1
 else
-    # Directory exists — check installed version from app.asar
-    HUB_INSTALLED_VERSION=$(python3 -c "
-import struct, json
-try:
-    with open('$HUB_INSTALL_DIR/resources/app.asar', 'rb') as f:
-        f.seek(12)
-        hsize = struct.unpack('<I', f.read(4))[0]
-        header = json.loads(f.read(hsize).decode('utf-8'))
-        pkg_info = header['files']['package.json']
-        f.seek(16 + hsize + int(pkg_info['offset']))
-        pkg = json.loads(f.read(int(pkg_info['size'])).decode('utf-8'))
-        print(pkg.get('version', 'unknown'))
-except Exception:
-    print('unknown')
-" 2>/dev/null || echo "unknown")
-
+    # Directory exists — check installed version against expected
+    HUB_INSTALLED_VERSION=$(python3 -c "import struct, json; f=open('$HUB_INSTALL_DIR/resources/app.asar','rb'); u0,u1,u2,u3=struct.unpack('<IIII',f.read(16)); hj=json.loads(f.read(u3).decode('utf-8')); p=hj['files']['package.json']; f.seek(8+u1+int(p['offset'])); print(json.loads(f.read(int(p['size'])).decode('utf-8'))['version'])" 2>/dev/null || echo "unknown")
     if [ "$HUB_INSTALLED_VERSION" = "$HUB_EXPECTED_VERSION" ]; then
         log "Antigravity Hub: already at version $HUB_EXPECTED_VERSION — OK"
         hub_needs_install=0
     else
         log "Antigravity Hub: version mismatch (installed=$HUB_INSTALLED_VERSION, expected=$HUB_EXPECTED_VERSION) — upgrading..."
+        # Backup old installation
         BACKUP_SUFFIX=$(date +%s)
         runuser -u $USER -- mv "$HUB_INSTALL_DIR" "${HUB_INSTALL_DIR}.bak.${BACKUP_SUFFIX}"
         log "Antigravity Hub: backed up old install to ${HUB_INSTALL_DIR}.bak.${BACKUP_SUFFIX}"
@@ -312,15 +301,23 @@ except Exception:
 fi
 
 if [ "$hub_needs_install" -eq 1 ]; then
-    runuser -u $USER -- mkdir -p "$HOME_DIR/.local/share" "$HOME_DIR/.local/bin"
+    runuser -u $USER -- mkdir -p "$HOME_DIR/.local/share" "$HOME_DIR/.local/bin" "$HOME_DIR/.local/share/applications"
     if runuser -u $USER -- curl -fsSL --retry 3 --retry-delay 5 --connect-timeout 30 -o "$HUB_TEMP" "$HUB_URL" >> "$LOG_FILE" 2>&1; then
         if runuser -u $USER -- tar -xzf "$HUB_TEMP" -C "$HOME_DIR/.local/share/" >> "$LOG_FILE" 2>&1; then
-            # tar.gz extracts to Antigravity-x64/ — rename to standard install dir
-            runuser -u $USER -- mv "$HOME_DIR/.local/share/Antigravity-x64" "$HUB_INSTALL_DIR" 2>/dev/null || true
+            # tar.gz extracts to Antigravity-x64/ or Antigravity/ — rename to standard install dir
+            if [ -d "$HOME_DIR/.local/share/Antigravity-x64" ]; then
+                runuser -u $USER -- mv "$HOME_DIR/.local/share/Antigravity-x64" "$HUB_INSTALL_DIR" 2>/dev/null || true
+            elif [ -d "$HOME_DIR/.local/share/Antigravity" ]; then
+                runuser -u $USER -- mv "$HOME_DIR/.local/share/Antigravity" "$HUB_INSTALL_DIR" 2>/dev/null || true
+            fi
             # Binary is named 'antigravity' inside the extracted directory
             runuser -u $USER -- ln -sf "$HUB_INSTALL_DIR/antigravity" "$HUB_SYMLINK"
             rm -f "$HUB_TEMP"
+<<<<<<< HEAD
             log "Antigravity Hub: downloaded, extracted, and symlinked v${HUB_EXPECTED_VERSION} — OK"
+=======
+            log "Antigravity Hub: downloaded, extracted v${HUB_EXPECTED_VERSION}, and symlinked — OK"
+>>>>>>> 4d2b514 (Upgrade Antigravity Hub to v2.8.1 and IDE to v2.5.5)
         else
             log "Antigravity Hub: extraction FAILED (rc=$?) — check $LOG_FILE for details"
             rm -f "$HUB_TEMP"
@@ -334,14 +331,21 @@ if [ "$hub_needs_install" -eq 1 ]; then
     find "$HOME_DIR/.local/share/" -maxdepth 1 -name "antigravity-hub.bak.*" -type d -mtime +7 -exec rm -rf {} + 2>/dev/null || true
 fi
 
+<<<<<<< HEAD
 # Ensure tray icon exists
 if [ -d "$HUB_INSTALL_DIR" ] && [ ! -f "$HUB_INSTALL_DIR/icon.png" ]; then
     log "Extracting Antigravity Hub tray icon..."
     runuser -u $USER -- bash -c "cd \"$HUB_INSTALL_DIR\" && npx -y asar extract-file resources/app.asar icon.png" >> "$LOG_FILE" 2>&1 || true
 fi
+=======
+# Deploy tray icon and desktop file if install dir exists
+if [ -d "$HUB_INSTALL_DIR" ]; then
+    log "Extracting Antigravity Hub tray icon..."
+    runuser -u $USER -- bash -c "cd \"$HUB_INSTALL_DIR\" && npx -y asar extract-file resources/app.asar icon.png" >> "$LOG_FILE" 2>&1 || true
+>>>>>>> 4d2b514 (Upgrade Antigravity Hub to v2.8.1 and IDE to v2.5.5)
 
-# Deploy the desktop file to ~/.local/share/applications/antigravity.desktop
-runuser -u $USER -- tee "$HOME_DIR/.local/share/applications/antigravity.desktop" > /dev/null <<'DESKTOP_EOF'
+    # Deploy the desktop file to ~/.local/share/applications/antigravity.desktop
+    runuser -u $USER -- tee "$HOME_DIR/.local/share/applications/antigravity.desktop" > /dev/null <<'DESKTOP_EOF'
 [Desktop Entry]
 Name=Antigravity Hub
 Comment=Antigravity 2.0 Desktop App (Hub)
@@ -352,6 +356,8 @@ Categories=Development;
 Terminal=false
 StartupWMClass=antigravity
 DESKTOP_EOF
+    log "Antigravity Hub: desktop file deployed"
+fi
 
 # --- Install/update Antigravity CLI (F-0015) ---
 log "Installing/updating Antigravity CLI..."

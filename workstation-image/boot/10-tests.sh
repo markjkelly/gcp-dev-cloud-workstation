@@ -1364,14 +1364,14 @@ log "--- F-0136: Antigravity IDE v2 ---"
 # (a) IDE v2 install directory exists
 check_dir "F-0136: IDE v2 install directory" "$HOME_DIR/.local/share/antigravity-ide"
 
-# F-0009: Verify IDE version matches expected
+# F-0009 / F-0016: Verify IDE version matches expected
 if [ -f "$HOME_DIR/.local/share/antigravity-ide/resources/app/product.json" ]; then
     IDE_INSTALLED_VERSION=$(python3 -c "import json; print(json.load(open('$HOME_DIR/.local/share/antigravity-ide/resources/app/product.json'))['ideVersion'])" 2>/dev/null || echo "unknown")
-    IDE_EXPECTED="2.1.1"
+    IDE_EXPECTED="2.5.5"
     if [ "$IDE_INSTALLED_VERSION" = "$IDE_EXPECTED" ]; then
-        test_pass "F-0009: Antigravity IDE version $IDE_INSTALLED_VERSION matches expected $IDE_EXPECTED"
+        test_pass "F-0016: Antigravity IDE version $IDE_INSTALLED_VERSION matches expected $IDE_EXPECTED"
     else
-        test_warn "F-0009: Antigravity IDE version mismatch (installed=$IDE_INSTALLED_VERSION, expected=$IDE_EXPECTED) — will auto-upgrade on next boot"
+        test_warn "F-0016: Antigravity IDE version mismatch (installed=$IDE_INSTALLED_VERSION, expected=$IDE_EXPECTED) — will auto-upgrade on next boot"
     fi
 fi
 
@@ -1542,6 +1542,19 @@ log ""
 log "--- F-0140: Antigravity Hub Tray Icon/Desktop ---"
 check_file "F-0140: Antigravity Hub desktop entry" "$HOME_DIR/.local/share/applications/antigravity.desktop"
 check_file "F-0140: Antigravity Hub tray icon" "$HOME_DIR/.local/share/antigravity-hub/icon.png"
+
+# F-0016: Verify Antigravity Hub version matches expected
+if [ -f "$HOME_DIR/.local/share/antigravity-hub/resources/app.asar" ]; then
+    HUB_INSTALLED_VERSION=$(python3 -c "import struct, json; f=open('$HOME_DIR/.local/share/antigravity-hub/resources/app.asar','rb'); u0,u1,u2,u3=struct.unpack('<IIII',f.read(16)); hj=json.loads(f.read(u3).decode('utf-8')); p=hj['files']['package.json']; f.seek(8+u1+int(p['offset'])); print(json.loads(f.read(int(p['size'])).decode('utf-8'))['version'])" 2>/dev/null || echo "unknown")
+    HUB_EXPECTED="2.8.1"
+    if [ "$HUB_INSTALLED_VERSION" = "$HUB_EXPECTED" ]; then
+        test_pass "F-0016: Antigravity Hub version $HUB_INSTALLED_VERSION matches expected $HUB_EXPECTED"
+    else
+        test_warn "F-0016: Antigravity Hub version mismatch (installed=$HUB_INSTALLED_VERSION, expected=$HUB_EXPECTED) — will auto-upgrade on next boot"
+    fi
+else
+    test_skip "F-0016: Antigravity Hub app.asar not found — skipping version check"
+fi
 
 # =============================================================================
 # F-0013: Beautify README Hero & Embed Checks

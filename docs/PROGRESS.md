@@ -477,5 +477,49 @@ Milestone 1: Initial Setup
 - Used Python-based ASAR header parsing in `07-apps.sh` and `10-tests.sh` to inspect Antigravity Hub's internal `package.json` version without requiring external node dependencies.
 
 ### Next Steps
-- PO review and manual PR merge.
+- Implement F-0016 for Hub 2.8.1 and IDE 2.5.5.
+
+## Session 15 — 2026-08-17 (F-0016: Upgrade Antigravity Hub to v2.8.1 and IDE to v2.5.5)
+
+### Date
+2026-08-17
+
+### Milestone
+Milestone 1: Initial Setup
+
+### Completed
+- **F-0016** (Upgrade Antigravity Hub to v2.8.1 and IDE to v2.5.5):
+  - Created product specification `docs/specs/F-0016-upgrade-hub-and-ide.md` with requirements and acceptance criteria.
+  - Added F-0016 to `docs/BACKLOG.md` under Milestone 1.
+  - Created feature branch `feature/upgrade-hub-2.8.1-ide-2.5.5`.
+  - Updated `workstation-image/boot/07-apps.sh`:
+    - Updated `IDE_URL` to v2.5.5 release tarball and `IDE_EXPECTED_VERSION` to `"2.5.5"`.
+    - Updated `HUB_URL` to v2.8.1 release tarball and added `HUB_EXPECTED_VERSION="2.8.1"`.
+    - Implemented version-aware upgrade logic for Antigravity Hub using python3 ASAR pickle header inspection to read `package.json` version from `resources/app.asar`.
+    - Added automatic backup rotation (`.bak.<epoch>`) and retention cleanup (>7 days) for Hub upgrades matching the IDE pattern.
+    - Preserved tray icon extraction (`icon.png` via `npx asar extract-file`) and `.desktop` file deployment.
+  - Updated `workstation-image/boot/10-tests.sh`:
+    - Updated IDE version assertion to expect `"2.5.5"`.
+    - Added Hub version assertion to expect `"2.8.1"`.
+  - Synchronized updated boot scripts to `/home/user/boot/`.
+  - Executed `07-apps.sh` and verified upgrade:
+    - IDE upgraded from v2.1.1 to v2.5.5.
+    - Hub upgraded from v2.0.10 to v2.8.1.
+  - Verified idempotency: re-running `07-apps.sh` skips re-downloading and reports "already at version".
+  - Executed `10-tests.sh` and verified all 195 integration tests PASS with 0 errors.
+
+### Files Changed
+- `docs/specs/F-0016-upgrade-hub-and-ide.md`
+- `docs/BACKLOG.md`
+- `workstation-image/boot/07-apps.sh`
+- `workstation-image/boot/10-tests.sh`
+- `docs/PROGRESS.md`
+- `docs/RELEASENOTES.md`
+
+### Decisions
+- Read Antigravity Hub version directly from `resources/app.asar` internal `package.json` using binary pickle header parsing (`8 + u1` offset) in Python to allow lightweight and reliable version checking without extra dependencies.
+- Retained the same backup rotation scheme (`.bak.<epoch>`) and 7-day cleanup threshold for Hub as used by IDE v2.
+
+### Next Steps
+- PO review and merge PR.
 

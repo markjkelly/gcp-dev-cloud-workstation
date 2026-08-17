@@ -1,14 +1,15 @@
 # Release Notes — Cloud Workstation
 
-## v1.3.3 — Upgrade Antigravity Suite (CLI, IDE, Hub) (2026-08-17)
-
-### Added
-- **Antigravity Hub Version-Aware Upgrades** — Implemented version detection for Antigravity Hub (`~/.local/share/antigravity-hub`) in `07-apps.sh` by reading `package.json` from `resources/app.asar`. If a version mismatch is detected, existing installations are safely backed up to `.bak.<epoch>` (with 7-day automated pruning) and the expected version (v2.0.10) is downloaded and configured.
-- **Antigravity CLI Version-Aware Upgrades** — Added manifest checks against `antigravity-cli-auto-updater` in `07-apps.sh`. If a newer CLI release is available (v1.1.13+), the installer removes the existing binary prior to execution to avoid `install.sh` early-exit terminations.
-- **Boot Integration Test Suite Assertions** — Added tests in `10-tests.sh` to verify `agy` CLI version is >= 1.1.13, Antigravity Hub version matches 2.0.10, and Antigravity IDE version matches 2.1.1.
+## v1.3.3 — Upgrade Antigravity Suite (CLI v1.1.13, IDE v2.5.5, Hub v2.8.1) (2026-08-17)
 
 ### Changed
-- **Antigravity CLI Version** — Upgraded Antigravity CLI from v1.1.12 to v1.1.13 on the workstation.
+- **Antigravity Hub v2.8.1** — Updated download URL to `https://storage.googleapis.com/antigravity-public/antigravity-hub/2.8.1-6512087774658560/linux-x64/Antigravity.tar.gz`.
+- **Version-Aware Hub Upgrade** — Added intelligent version detection for Antigravity Hub in `07-apps.sh` by inspecting `resources/app.asar` internal `package.json`. Includes automatic backup rotation (`.bak.<epoch>`) and 7-day retention cleanup.
+- **Antigravity IDE v2.5.5** — Updated download URL to `https://edgedl.me.gvt1.com/edgedl/release2/j0qc3/antigravity/stable/2.5.5-4923483625488384/linux-x64/Antigravity%20IDE.tar.gz` and `IDE_EXPECTED_VERSION="2.5.5"`.
+- **Antigravity CLI v1.1.13** — Added manifest checks against `antigravity-cli-auto-updater` in `07-apps.sh`. If a newer CLI release is available (v1.1.13+), the installer removes the existing binary prior to execution to avoid `install.sh` early-exit terminations.
+
+### Added
+- **Boot Test Verification** — Added automated version verification assertions in `10-tests.sh` for Antigravity Hub v2.8.1, Antigravity IDE v2.5.5, and Antigravity CLI v1.1.13.
 
 ## v1.3.2 — Antigravity Hub Documentation in README (2026-07-23)
 

@@ -446,3 +446,36 @@ Milestone 1: Initial Setup
 ### Next Steps
 - PO review and manual PR merge.
 
+## Session 14 — 2026-08-17 (F-0015: Upgrade Antigravity Suite: CLI, IDE, Hub)
+
+### Date
+2026-08-17
+
+### Milestone
+Milestone 1: Initial Setup
+
+### Completed
+- **F-0015** (Upgrade Antigravity Suite: CLI, IDE, Hub):
+  - Created product spec `docs/specs/F-0015-upgrade-antigravity-suite.md`.
+  - Added release manifest checking and version-aware upgrade logic for Antigravity CLI (`agy`) in `workstation-image/boot/07-apps.sh`.
+  - Resolved CLI upgrade blocker where the official installer (`install.sh`) aborted early when `~/.local/bin/agy` existed by deleting the stale binary prior to executing the installer script. Successfully updated CLI from 1.1.12 to 1.1.13.
+  - Implemented version-aware lifecycle management for Antigravity Hub in `workstation-image/boot/07-apps.sh` (extracting and comparing installed version from `resources/app.asar`, creating dated backups `${HUB_INSTALL_DIR}.bak.<epoch>`, and pruning backups older than 7 days).
+  - Verified Antigravity IDE version-aware logic for v2.1.1.
+  - Added integration test assertions in `workstation-image/boot/10-tests.sh` under AI CLI tools and dedicated F-0015 section checking `agy` version >= 1.1.13, Hub version 2.0.10, and IDE version 2.1.1.
+  - Synchronized updated boot scripts to `/home/user/boot/` per persistence requirements.
+
+### Files Changed
+- `workstation-image/boot/07-apps.sh`
+- `workstation-image/boot/10-tests.sh`
+- `docs/specs/F-0015-upgrade-antigravity-suite.md`
+- `docs/BACKLOG.md`
+- `docs/PROGRESS.md`
+- `docs/RELEASENOTES.md`
+
+### Decisions
+- Queried CLI release manifest dynamically on boot while providing safe fail-open fallback if offline or unreachable.
+- Used Python-based ASAR header parsing in `07-apps.sh` and `10-tests.sh` to inspect Antigravity Hub's internal `package.json` version without requiring external node dependencies.
+
+### Next Steps
+- PO review and manual PR merge.
+

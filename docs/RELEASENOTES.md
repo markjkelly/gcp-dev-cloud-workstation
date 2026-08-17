@@ -1,5 +1,15 @@
 # Release Notes — Cloud Workstation
 
+## v1.3.3 — Upgrade Antigravity Suite (CLI, IDE, Hub) (2026-08-17)
+
+### Added
+- **Antigravity Hub Version-Aware Upgrades** — Implemented version detection for Antigravity Hub (`~/.local/share/antigravity-hub`) in `07-apps.sh` by reading `package.json` from `resources/app.asar`. If a version mismatch is detected, existing installations are safely backed up to `.bak.<epoch>` (with 7-day automated pruning) and the expected version (v2.0.10) is downloaded and configured.
+- **Antigravity CLI Version-Aware Upgrades** — Added manifest checks against `antigravity-cli-auto-updater` in `07-apps.sh`. If a newer CLI release is available (v1.1.13+), the installer removes the existing binary prior to execution to avoid `install.sh` early-exit terminations.
+- **Boot Integration Test Suite Assertions** — Added tests in `10-tests.sh` to verify `agy` CLI version is >= 1.1.13, Antigravity Hub version matches 2.0.10, and Antigravity IDE version matches 2.1.1.
+
+### Changed
+- **Antigravity CLI Version** — Upgraded Antigravity CLI from v1.1.12 to v1.1.13 on the workstation.
+
 ## v1.3.2 — Antigravity Hub Documentation in README (2026-07-23)
 
 ### Added

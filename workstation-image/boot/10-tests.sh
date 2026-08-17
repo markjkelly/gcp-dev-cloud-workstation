@@ -282,6 +282,7 @@ log ""
 if ws_module_enabled "ai-tools"; then
     log "--- AI CLI Tools ---"
     check_binary "Antigravity CLI" "agy"
+    check_version "Antigravity CLI" "agy --version"
 else
     log "--- AI CLI Tools --- (SKIPPED — module disabled)"
     test_skip "AI CLI Tools (module disabled)"
@@ -1565,6 +1566,76 @@ if [ -d "$REPO_DIR_F0014" ]; then
     check_grep "F-0014: README references hub-restart command" "hub-restart" "$REPO_DIR_F0014/README.md"
 else
     test_skip "F-0014: repository directory missing ($REPO_DIR_F0014)"
+fi
+
+# =============================================================================
+# F-0015: Antigravity Suite Upgrade Checks (CLI, IDE, Hub)
+# =============================================================================
+log ""
+log "--- F-0015: Antigravity Suite Versions ---"
+
+# (a) Antigravity CLI version >= 1.1.13
+if runuser -u $USER -- bash -c ". $NIX_SH && export PATH=$HOME_DIR/.nix-profile/bin:$HOME_DIR/.npm-global/bin:$HOME_DIR/.local/bin:\$PATH && which agy" >/dev/null 2>&1; then
+    AGY_VER=$(runuser -u $USER -- bash -c ". $NIX_SH && export PATH=$HOME_DIR/.local/bin:\$PATH && agy --version" 2>/dev/null | head -1 | tr -d '\r')
+    if [ -n "$AGY_VER" ]; then
+        IS_GE=$(python3 -c "
+import sys
+def parse_ver(v):
+    return [int(x) for x in v.split('.') if x.isdigit()]
+try:
+    print(1 if parse_ver('$AGY_VER') >= parse_ver('1.1.13') else 0)
+except Exception:
+    print(0)
+" 2>/dev/null || echo "0")
+        if [ "$IS_GE" = "1" ]; then
+            test_pass "F-0015: Antigravity CLI version $AGY_VER is >= 1.1.13"
+        else
+            test_fail "F-0015: Antigravity CLI version $AGY_VER is older than 1.1.13"
+        fi
+    else
+        test_fail "F-0015: Antigravity CLI version check returned empty"
+    fi
+else
+    test_skip "F-0015: Antigravity CLI not on PATH"
+fi
+
+# (b) Antigravity Hub version == 2.0.10
+if [ -f "$HOME_DIR/.local/share/antigravity-hub/resources/app.asar" ]; then
+    HUB_INSTALLED_VER=$(python3 -c "
+import struct, json
+try:
+    with open('$HOME_DIR/.local/share/antigravity-hub/resources/app.asar', 'rb') as f:
+        f.seek(12)
+        hsize = struct.unpack('<I', f.read(4))[0]
+        header = json.loads(f.read(hsize).decode('utf-8'))
+        pkg_info = header['files']['package.json']
+        f.seek(16 + hsize + int(pkg_info['offset']))
+        pkg = json.loads(f.read(int(pkg_info['size'])).decode('utf-8'))
+        print(pkg.get('version', 'unknown'))
+except Exception:
+    print('unknown')
+" 2>/dev/null || echo "unknown")
+    HUB_EXPECTED="2.0.10"
+    if [ "$HUB_INSTALLED_VER" = "$HUB_EXPECTED" ]; then
+        test_pass "F-0015: Antigravity Hub version $HUB_INSTALLED_VER matches expected $HUB_EXPECTED"
+    else
+        test_warn "F-0015: Antigravity Hub version mismatch (installed=$HUB_INSTALLED_VER, expected=$HUB_EXPECTED)"
+    fi
+else
+    test_skip "F-0015: Antigravity Hub asar not found at $HOME_DIR/.local/share/antigravity-hub/resources/app.asar"
+fi
+
+# (c) Antigravity IDE version == 2.1.1
+if [ -f "$HOME_DIR/.local/share/antigravity-ide/resources/app/product.json" ]; then
+    IDE_INSTALLED_VER=$(python3 -c "import json; print(json.load(open('$HOME_DIR/.local/share/antigravity-ide/resources/app/product.json'))['ideVersion'])" 2>/dev/null || echo "unknown")
+    IDE_EXPECTED="2.1.1"
+    if [ "$IDE_INSTALLED_VER" = "$IDE_EXPECTED" ]; then
+        test_pass "F-0015: Antigravity IDE version $IDE_INSTALLED_VER matches expected $IDE_EXPECTED"
+    else
+        test_warn "F-0015: Antigravity IDE version mismatch (installed=$IDE_INSTALLED_VER, expected=$IDE_EXPECTED)"
+    fi
+else
+    test_skip "F-0015: Antigravity IDE product.json not found"
 fi
 
 # =============================================================================

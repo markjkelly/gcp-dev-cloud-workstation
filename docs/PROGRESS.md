@@ -523,3 +523,57 @@ Milestone 1: Initial Setup
 ### Next Steps
 - PO review and merge PR.
 
+
+## Session 16 — 2026-08-19 (F-0017: Rearrange Workspaces)
+
+### Date
+2026-08-19
+
+### Milestone
+Milestone 1: Initial Setup
+
+### Completed
+- **F-0017** (Rearrange Workspaces):
+  - Created product specification `docs/specs/F-0017-rearrange-workspaces.md`.
+  - Added F-0017 to `docs/BACKLOG.md` and set status to `done`.
+  - Created feature branch `feature/rearrange-workspaces`.
+  - Modified `workstation-image/boot/08-workspaces.sh` to rearrange layout:
+    - Completely removed Antigravity IDE v2 from the auto-launch boot sequence.
+    - Moved Antigravity Hub to Workspace 1 and configured it to auto-launch at boot on Workspace 1 using appropriate command flags and wait logic.
+    - Configured the launch sequence to focus Workspace 2 (VS Code) at the very end of the autostart sequence.
+  - Modified `workstation-image/configs/sway/config` to align with the new workspace layout:
+    - Completely removed all window placement rules and comments for Antigravity IDE v2.
+    - Updated Sway window rule for Hub: `for_window [app_id="^antigravity$"] move container to workspace number 1`.
+    - Maintained Workspace 5 keybindings mapped to `$mod+u` and `$super+u` focusing Workspace 5 (which is empty).
+    - Updated workspace layout status comment.
+  - Updated `workstation-image/scripts/hub-restart` and `workstation-image/scripts/hub-start` to target Workspace 1 instead of Workspace 5.
+  - Synchronized repo changes to the live system to guarantee persistence:
+    - Copied updated sway config to `~/.config/home-manager/sway-config` and executed `home-manager switch`.
+    - Copied updated `08-workspaces.sh` to `~/boot/08-workspaces.sh`.
+    - Copied updated `hub-restart` and `hub-start` to `~/.local/bin/`.
+  - Updated `workstation-image/boot/10-tests.sh`:
+    - Removed tests verifying Antigravity IDE presence and version.
+    - Updated assertions for Hub placement, keybindings, and autostart sequence to target Workspace 1.
+    - Updated `hub-restart` and `hub-start` workspace target assertions to Workspace 1.
+    - Verified all updated tests pass successfully on the workstation.
+  - Updated `docs/STARTUP_SCRIPTS.md` to document the new `F-0017` workspace layout.
+
+### Files Changed
+- `docs/specs/F-0017-rearrange-workspaces.md`
+- `docs/BACKLOG.md`
+- `workstation-image/boot/08-workspaces.sh`
+- `workstation-image/configs/sway/config`
+- `workstation-image/scripts/hub-restart`
+- `workstation-image/scripts/hub-start`
+- `workstation-image/boot/10-tests.sh`
+- `docs/STARTUP_SCRIPTS.md`
+- `docs/PROGRESS.md`
+- `docs/RELEASENOTES.md`
+
+### Decisions
+- Replaced the Antigravity IDE launch in `08-workspaces.sh` with a clean `launch_and_wait` invocation of `antigravity-hub` targeting Workspace 1.
+- Kept `$mod+u` / `$super+u` bindings pointing to Workspace 5 but left Workspace 5 empty to preserve user's mnemonic keybindings structure.
+
+### Next Steps
+- PO review and merge PR.
+

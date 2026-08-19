@@ -57,20 +57,14 @@ systemd (after Sway starts)
   │         by the sway config's `exec /usr/bin/Xwayland -rootless :0`
   │         autostart — 08-workspaces.sh only re-launches if that
   │         is somehow absent — see F-0097)
-  │         F-0124/F-0131 workspace layout: ws1 = empty (Hub NOT auto-launched),
-  │         ws2 = VS Code (auto-started via sway exec + for_window placement rule — F-0131),
-  │         ws3 = foot terminal, ws4 = foot terminal, ws5 = Chrome.
-  │         Boot no longer launches the Hub (F-0124). Workspace 1 starts
-  │         empty. The user runs hub-restart (F-0122) after connecting to
-  │         launch the Hub — this always works reliably.
-  │         VS Code autostart is implemented in the sway config (exec directive
-  │         in the AUTOSTART section + for_window placement rule), NOT via
-  │         ws-autolaunch.service (which is masked by 11-custom-tools.sh).
-  │         Launch order: Chrome (ws5) first, foot (ws3, ws4) last.
-  │         Final focus: ws3 (terminal — ready to run hub-restart).
+  │         F-0017 workspace layout: ws1 = Hub (auto-launched),
+  │         ws2 = VS Code (auto-launched, focused after boot),
+  │         ws3 = foot terminal, ws4 = Chrome, ws5-8 = empty.
+  │         Autolaunch is managed by 08-workspaces.sh.
+  │         Launch order: Chrome (ws4) first, then VS Code (ws2), foot terminal (ws3), and Hub (ws1) last.
+  │         Final focus: ws2 (VS Code).
   │         Chrome uses --disable-gpu (no GPU on this host — F-0111).
-  │         F-0116 Hub placement rule (sway config): the
-  │         for_window [app_id="^antigravity-ide$"] → ws1 rule (F-0136) and for_window [app_id="^antigravity$"] → ws5 rule for Hub
+  │         Hub placement rule (sway config): the for_window [app_id="^antigravity$"] → ws1 rule
   │         F-0115: gnome-keyring-daemon is started with empty-password
   │         unlock (--unlock --components=secrets) BEFORE any app launch
   │         so the Hub's language_server can persist and reload its OAuth

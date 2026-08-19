@@ -1,16 +1,16 @@
 #!/bin/bash
 # =============================================================================
-# 08-workspaces.sh — Auto-launch apps across 5 Sway workspaces
+# 08-workspaces.sh — Auto-launch apps across 4 Sway workspaces
 # =============================================================================
 # Waits for Sway to be ready, then launches:
-#   ws1 = Antigravity IDE v2 (auto-launched, focused after boot)
-#   ws2 = VS Code, ws3 = foot terminal, ws4 = Chrome
-#   ws5 = (empty — Hub not auto-launched; run 'hub-restart' to start it)
+#   ws1 = Hub (auto-launched at boot)
+#   ws2 = VS Code (auto-launched, focused after boot)
+#   ws3 = foot terminal, ws4 = Chrome
+#   ws5-8 = (empty)
 # Idempotent: skips if windows already exist.
 # Runs as systemd service (ws-autolaunch) after wayvnc.service.
 #
-# F-0136: IDE v2 auto-launched on ws1. Hub moved to ws5 (manual start).
-# F-0124: Hub autostart removed. Use hub-restart (F-0122) after connecting.
+# F-0017: Hub moved to ws1 (auto-launched). IDE removed. VS Code focused at end.
 # =============================================================================
 
 USER="user"
@@ -286,13 +286,13 @@ else
 fi
 
 # =============================================================================
-# F-0136 workspace layout:
-#   ws1 = Antigravity IDE v2 (auto-launch, 15s timeout, Electron flags)
-#   ws2 = VS Code (Electron — 15s timeout)
+# F-0017 workspace layout:
+#   ws1 = Hub (auto-launch, 15s timeout, Electron flags)
+#   ws2 = VS Code (Electron — 15s timeout, focused after boot)
 #   ws3 = foot terminal (fast — 5s timeout)
 #   ws4 = Chrome (Electron — 15s timeout)
-#   ws5 = Hub (manual — not auto-launched; run 'hub-restart' to start it)
-# Final focused workspace: ws1 (Antigravity IDE)
+#   ws5-8 = Empty / Custom (no default apps)
+# Final focused workspace: ws2 (VS Code)
 # =============================================================================
 
 # Workspace 4: Google Chrome (Electron — 15s timeout)
@@ -306,16 +306,11 @@ launch_and_wait 2 15 "$NIX/code" --no-sandbox --ozone-platform=wayland --disable
 # Workspace 3: foot terminal (fast — 5s timeout)
 launch_and_wait 3 5 "$FOOT" --working-directory=/home/user
 
-# Workspace 1: Antigravity IDE v2 (Electron — 15s timeout)
-# F-0136: auto-launch with Electron flags for GPU-less Wayland host.
-launch_and_wait 1 15 /home/user/.local/bin/antigravity-ide --ozone-platform=wayland --disable-gpu --disable-dev-shm-usage
+# Workspace 1: Hub (Electron — 15s timeout)
+# Auto-launched on Workspace 1.
+launch_and_wait 1 15 /home/user/.local/bin/antigravity-hub --no-sandbox --ozone-platform=wayland --disable-gpu --disable-dev-shm-usage --user-data-dir=/home/user/.config/Antigravity-Hub
 
-# F-0124: Hub not auto-launched at boot.
-# ws5 starts empty. The sway for_window rule pins any app_id="antigravity"
-# window to ws5, so hub-restart lands there correctly.
-log "Hub not auto-launched (F-0124) — run 'hub-restart' to start it on ws5."
-
-# F-0136: Focus on ws1 (Antigravity IDE) so the user lands on the primary dev environment.
+# Focus on ws2 (VS Code) so the user lands on the primary dev environment.
 sleep 1
-sway_cmd "workspace number 1"
-log "All workspaces launched, switched to workspace 1 (Antigravity IDE)"
+sway_cmd "workspace number 2"
+log "All workspaces launched, switched to workspace 2 (VS Code)"

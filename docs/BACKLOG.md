@@ -37,5 +37,5 @@
 | F-0014 | Antigravity Hub Documentation in README | docs/specs/F-0014-readme-hub-docs.md | P1 | done | SWE | feature/readme-hub-docs | F-0003 | Document preinstalled Antigravity Hub, hub-restart utility, Wayland display rationale, and ws5 mapping in README |
 | F-0015 | Upgrade Antigravity Suite (CLI, IDE, Hub) | docs/specs/F-0015-upgrade-antigravity-suite.md | P1 | done | SWE | feature/upgrade-antigravity-suite | F-0009 | Upgrade CLI to 1.1.13+, add version-aware upgrade logic for CLI and Hub in 07-apps.sh, verify IDE 2.1.1, and update integration tests |
 | F-0016 | Upgrade Antigravity Hub to v2.8.1 and IDE to v2.5.5 | docs/specs/F-0016-upgrade-hub-and-ide.md | P1 | done | SWE | feature/upgrade-hub-2.8.1-ide-2.5.5 | F-0009, F-0015 | Upgraded Hub to v2.8.1 and IDE to v2.5.5. Added version-aware Hub upgrade logic with asar parser, backup rotation, and tray icon extraction. Boot tests updated and passing (195 PASS). Idempotency verified. |
-
+| F-0017 | Rearrange Workspaces | docs/specs/F-0017-rearrange-workspaces.md | P1 | done | SWE | feature/rearrange-workspaces | — | Rearrange workspaces: Hub to WS1 (auto-launched), VS Code focused after boot, IDE removed, all tests pass. |
 

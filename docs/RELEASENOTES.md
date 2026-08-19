@@ -1,5 +1,22 @@
 # Release Notes — Cloud Workstation
 
+## v1.3.4 — Rearrange Workspaces (2026-08-19)
+
+### Changed
+- **Workspace Layout Rearrangement** — Rearranged the workstation workspace mapping to focus on a new layout:
+  - Workspace 1: Antigravity Hub (auto-launched at boot)
+  - Workspace 2: VS Code (auto-launched at boot, default focus after boot)
+  - Workspace 3: foot terminal (auto-launched at boot)
+  - Workspace 4: Google Chrome (auto-launched at boot)
+  - Workspaces 5-8: Empty / Custom (no default apps)
+- **Antigravity IDE v2 Removal** — Completely removed Antigravity IDE v2 from the auto-launch boot sequence and Sway configuration, including window placement rules and comments.
+- **Hub Workspace Placement** — Moved Antigravity Hub to Workspace 1, updating Sway placement rules and keybindings (`$mod+h` and `$super+h` to focus Workspace 1).
+- **Keybindings Update** — Maintained `$mod+u` and `$super+u` mapped to Workspace 5, which now switches to an empty workspace.
+- **Helper Scripts Alignment** — Updated `hub-restart` and `hub-start` scripts to target Workspace 1 instead of Workspace 5.
+
+### Added
+- **Integration Tests Validation** — Updated boot tests in `10-tests.sh` to remove Antigravity IDE presence and version assertions, updated checks for Hub placement, keybindings, and autostart sequence, and updated `hub-restart` and `hub-start` assertions to verify they target Workspace 1. All tests are verified as passing.
+
 ## v1.3.3 — Upgrade Antigravity Suite (CLI v1.1.13, IDE v2.5.5, Hub v2.8.1) (2026-08-17)
 
 ### Changed

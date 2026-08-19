@@ -84,11 +84,9 @@ for_window [app_id="thunar" title="File Operation Progress"] floating enable
 # "move container" is more reliable than "assign" for Electron app_id timing.
 for_window [app_id="code"] move container to workspace number 2
 
-# F-0136: Antigravity IDE v2 placement — always land on workspace 1
-for_window [app_id="^antigravity-ide$"] move container to workspace number 1
+# Hub placement — land on workspace 1 (auto-launched at boot)
+for_window [app_id="^antigravity$"] move container to workspace number 1
 
-# Hub placement — land on workspace 5 (manual launch via hub-restart)
-for_window [app_id="^antigravity$"] move container to workspace number 5
 
 # Chrome placement — always land on workspace 4
 for_window [app_id="google-chrome"] move container to workspace number 4
@@ -195,8 +193,8 @@ floating_modifier Mod4 normal
 
 # -----------------------------------------------------------------------------
 # Workspaces — Switch (CTRL+SHIFT or Super + key)
-# Layout (F-0136): ws1=IDE($mod+h), ws2=VS Code($mod+i), ws3=foot($mod+o),
-#                  ws4=Chrome($mod+p), ws5=Hub($mod+u), ws6-8($mod+j/k/l)
+# Layout (F-0017): ws1=Hub($mod+h), ws2=VS Code($mod+i), ws3=foot($mod+o),
+#                  ws4=Chrome($mod+p), ws5=Empty($mod+u), ws6-8($mod+j/k/l)
 # -----------------------------------------------------------------------------
 
 
